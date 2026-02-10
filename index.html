@@ -11,7 +11,7 @@
     :root{
       --morado-osc:#4a148c;
       --morado:#6a1b9a;
-      --morado-med:#8e24aa;
+      --morado-med:#7b1fa2;
       --morado-cla:#b39ddb;
 
       --bg:#0b0b10;
@@ -19,29 +19,81 @@
       --panel2:#161827;
       --txt:#f4f5f7;
       --txt2:#cfd3da;
-      --line:rgba(255,255,255,.08);
+      --line:rgba(255,255,255,.10);
 
       --acento:#ffb300;   /* puntos */
       --acento2:#ff6d00;  /* hover */
+
+      /* Leyenda Rezago (3 niveles) */
+      --rez-alto:#4a148c;
+      --rez-medio:#7b1fa2;
+      --rez-bajo:#b39ddb;
+      --rez-sd:#d1c4e9;
     }
 
-    html,body{height:100%;margin:0;font-family:system-ui,Segoe UI,Arial,sans-serif;background:var(--bg);color:var(--txt);}
+    html,body{
+      height:100%;
+      margin:0;
+      font-family:system-ui,Segoe UI,Arial,sans-serif;
+      background:var(--bg);
+      color:var(--txt);
+      overflow:hidden;
+    }
+
     header{
       padding:12px 14px;
       background:linear-gradient(90deg, rgba(74,20,140,.95), rgba(106,27,154,.88));
-      border-bottom:1px solid rgba(255,255,255,.08);
+      border-bottom:1px solid rgba(255,255,255,.10);
     }
-    header h1{margin:0;font-size:18px;letter-spacing:.2px;}
-    header .sub{margin-top:3px;font-size:12px;color:var(--txt2);}
+
+    /* ✅ título centrado */
+    header h1{
+      margin:0;
+      font-size:18px;
+      letter-spacing:.2px;
+      text-align:center;
+      line-height:1.25;
+    }
+
+    header .sub{
+      margin-top:6px;
+      font-size:12px;
+      color:var(--txt2);
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      gap:8px;
+      flex-wrap:wrap;
+      text-align:center;
+    }
+
+    /* ✅ link OPIRNA cuidado para no desbordar */
+    .opirna-link{
+      color:#fff;
+      text-decoration:underline;
+      text-underline-offset:2px;
+      max-width:100%;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+      display:inline-block;
+      vertical-align:bottom;
+    }
+    .opirna-link:hover{opacity:.92;}
 
     #toolbar{
-      display:flex; flex-wrap:wrap; align-items:center; gap:10px;
+      display:flex;
+      flex-wrap:wrap;
+      align-items:center;
+      justify-content:center;
+      gap:10px;
       padding:10px 14px;
       background:linear-gradient(180deg, rgba(22,24,39,.95), rgba(17,18,26,.92));
       border-bottom:1px solid var(--line);
     }
+
     .btn{
-      border:1px solid rgba(255,255,255,.12);
+      border:1px solid rgba(255,255,255,.14);
       background:rgba(255,255,255,.06);
       color:var(--txt);
       padding:8px 10px;
@@ -49,19 +101,26 @@
       cursor:pointer;
       font-size:13px;
       transition:.15s ease;
+      max-width:100%;
+      white-space:nowrap;
     }
     .btn:hover{background:rgba(255,255,255,.12);}
     .btn:disabled{opacity:.45;cursor:not-allowed;}
+
     .pill{
       font-size:12px;
       color:var(--txt2);
       padding:7px 10px;
       border-radius:999px;
-      border:1px solid rgba(255,255,255,.10);
+      border:1px solid rgba(255,255,255,.12);
       background:rgba(255,255,255,.05);
+      max-width:100%;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
     }
 
-    #map{height:calc(100% - 148px);}
+    #map{height:calc(100% - 178px);} /* header + toolbar + footer */
 
     footer{
       padding:10px 14px;
@@ -69,6 +128,10 @@
       color:var(--txt2);
       background:rgba(10,10,16,.92);
       border-top:1px solid var(--line);
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      text-align:center;
     }
 
     /* Spinner */
@@ -99,10 +162,10 @@
     }
     @keyframes spin{to{transform:rotate(360deg)}}
 
-    /* Leaflet controls dark-ish */
+    /* Leaflet controls */
     .leaflet-control-layers,
     .leaflet-control-zoom{
-      border:1px solid rgba(255,255,255,.10)!important;
+      border:1px solid rgba(255,255,255,.12)!important;
       background:rgba(17,18,26,.88)!important;
       color:var(--txt)!important;
       border-radius:14px!important;
@@ -110,9 +173,11 @@
     }
     .leaflet-control-layers label{color:var(--txt2)!important;}
     .leaflet-control-zoom a{
-      background:transparent!important;color:var(--txt)!important;border-bottom:1px solid rgba(255,255,255,.08)!important;
+      background:transparent!important;color:var(--txt)!important;
+      border-bottom:1px solid rgba(255,255,255,.08)!important;
     }
     .leaflet-control-zoom a:last-child{border-bottom:none!important;}
+
     .leaflet-tooltip{
       background:rgba(17,18,26,.92);
       color:var(--txt);
@@ -120,6 +185,38 @@
       border-radius:12px;
       padding:8px 10px;
       box-shadow:none;
+      max-width:260px;
+    }
+
+    /* ✅ Leyenda microgeoportal dentro del mapa, sin desbordar */
+    .legend{
+      background:rgba(17,18,26,.88);
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:14px;
+      padding:10px 10px;
+      color:var(--txt);
+      max-width:260px;
+    }
+    .legend .ttl{
+      font-size:12px;
+      color:var(--txt2);
+      margin-bottom:8px;
+    }
+    .legend .row{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      font-size:12px;
+      color:var(--txt2);
+      margin:6px 0;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .swatch{
+      width:14px;height:14px;border-radius:4px;
+      border:1px solid rgba(0,0,0,.35);
+      flex:0 0 auto;
     }
   </style>
 </head>
@@ -127,13 +224,22 @@
 <body>
   <header>
     <h1 id="title">Geoportal del Fondo de Aportaciones para la Infraestructura Social (FAIS)</h1>
-    <div class="sub" id="subtitle">Mapa nacional – da clic en una entidad</div>
+
+    <div class="sub" id="subtitle">
+      <span>Mapa nacional – da clic en una entidad</span>
+      <span style="opacity:.6">•</span>
+      <a class="opirna-link" href="https://opirna.ciesas.edu.mx" target="_blank" rel="noopener">
+        Observatorio de Pueblos Indígenas, Recursos Naturales y Medio Ambiente del ProSIG-CSH, CIESAS
+      </a>
+    </div>
   </header>
 
   <div id="toolbar">
     <button id="btnBack" class="btn" disabled>⬅ Regresar al mapa nacional</button>
     <span class="pill" id="statePill">Vista: México</span>
-    <span class="pill" id="legendPill">Rezago: Alto / Medio / Bajo</span>
+
+    <!-- ✅ botón de fuentes -->
+    <button id="btnSources" class="btn">📚 Fuentes y créditos</button>
   </div>
 
   <div id="map"></div>
@@ -174,7 +280,7 @@
       { slug:"oaxaca", nombre:"Oaxaca", center:[17.1,-96.7], zoom:7 },
       { slug:"puebla", nombre:"Puebla", center:[19.0,-98.2], zoom:7 },
       { slug:"queretaro", nombre:"Querétaro", center:[20.8,-99.8], zoom:8 },
-      { slug:"quintanaro", nombre:"Quintana Roo", center:[19.5,-88.4], zoom:7 },
+      { slug:"quintanaroo", nombre:"Quintana Roo", center:[19.5,-88.4], zoom:7 },   // ✅ corregido
       { slug:"sanluispotosi", nombre:"San Luis Potosí", center:[22.3,-100.9], zoom:7 },
       { slug:"sinaloa", nombre:"Sinaloa", center:[25.0,-107.5], zoom:7 },
       { slug:"sonora", nombre:"Sonora", center:[29.3,-110.3], zoom:6 },
@@ -186,6 +292,36 @@
 
     // Carpeta donde están las 50 capas
     const DATA_ESTADOS_DIR = "data/ESTADOS";
+
+    // ✅ Mapa definitivo por clave estatal (evita confusión EdoMex vs CDMX)
+    // Se toma CVE_EDO del mexico_entidades.geojson
+    const CVE_TO_SLUG = {
+      "02":"bajacalifornia",
+      "04":"campeche",
+      "07":"chiapas",
+      "08":"chihuahua",
+      "09":"cdmx",
+      "06":"colima",
+      "15":"edomex",
+      "11":"guanajuato",
+      "12":"guerrero",
+      "13":"hidalgo",
+      "14":"jalisco",
+      "16":"michoacan",
+      "17":"morelos",
+      "18":"nayarit",
+      "20":"oaxaca",
+      "21":"puebla",
+      "22":"queretaro",
+      "23":"quintanaroo",
+      "24":"sanluispotosi",
+      "25":"sinaloa",
+      "26":"sonora",
+      "27":"tabasco",
+      "29":"tlaxcala",
+      "31":"yucatan",
+      "32":"zacatecas"
+    };
 
     /********************
      * Helpers
@@ -201,19 +337,10 @@
         .normalize("NFD").replace(/[\u0300-\u036f]/g, "");
     }
 
-    // ✅ Ajustado a tu capa nacional: NOMBRE_EDO
+    // ✅ tu capa nacional trae NOMBRE_EDO
     function getEntidadNombre(props){
       if (!props) return null;
       if (props.NOMBRE_EDO) return props.NOMBRE_EDO;
-
-      const otros = [
-        "NOMGEO","NOM_ENT","ENTIDAD","ESTADO","NOMBRE",
-        "NAME","NAME_1","admin_name"
-      ];
-
-      for (const k of otros){
-        if (props[k] != null && String(props[k]).trim() !== "") return props[k];
-      }
       return null;
     }
 
@@ -261,10 +388,10 @@
     }
 
     function colorRezago3(nivel){
-      if (nivel === "Alto") return "#4a148c";
-      if (nivel === "Medio") return "#7b1fa2";
-      if (nivel === "Bajo") return "#b39ddb";
-      return "#d1c4e9";
+      if (nivel === "Alto") return getComputedStyle(document.documentElement).getPropertyValue('--rez-alto').trim() || "#4a148c";
+      if (nivel === "Medio") return getComputedStyle(document.documentElement).getPropertyValue('--rez-medio').trim() || "#7b1fa2";
+      if (nivel === "Bajo") return getComputedStyle(document.documentElement).getPropertyValue('--rez-bajo').trim() || "#b39ddb";
+      return getComputedStyle(document.documentElement).getPropertyValue('--rez-sd').trim() || "#d1c4e9";
     }
 
     /********************
@@ -291,7 +418,7 @@
       const r = monto == null ? 7 : Math.max(6, Math.min(14, 6 + Math.sqrt(monto)/120));
       return {
         radius: r,
-        fillColor: "var(--acento)",
+        fillColor: getComputedStyle(document.documentElement).getPropertyValue('--acento').trim() || "#ffb300",
         color: "rgba(0,0,0,.55)",
         weight: 1.2,
         fillOpacity: 0.95
@@ -300,6 +427,36 @@
 
     function pointToLayer(feature, latlng){
       return L.circleMarker(latlng, puntoStyle(feature.properties || {}));
+    }
+
+    /********************
+     * Leyenda de rezago (solo visible en microgeoportal)
+     ********************/
+    let legendControl = null;
+
+    function addLegend(){
+      removeLegend();
+
+      legendControl = L.control({ position: "bottomright" });
+      legendControl.onAdd = function(){
+        const div = L.DomUtil.create("div", "legend");
+        div.innerHTML = `
+          <div class="ttl"><b>${REZAGO_FIELD}</b> (3 niveles)</div>
+          <div class="row"><span class="swatch" style="background:var(--rez-alto)"></span> Alto</div>
+          <div class="row"><span class="swatch" style="background:var(--rez-medio)"></span> Medio</div>
+          <div class="row"><span class="swatch" style="background:var(--rez-bajo)"></span> Bajo</div>
+          <div class="row"><span class="swatch" style="background:var(--rez-sd)"></span> Sin dato</div>
+        `;
+        return div;
+      };
+      legendControl.addTo(map);
+    }
+
+    function removeLegend(){
+      if (legendControl){
+        map.removeControl(legendControl);
+        legendControl = null;
+      }
     }
 
     /********************
@@ -342,6 +499,46 @@
     }
 
     /********************
+     * Ventana: Fuentes y créditos
+     ********************/
+    function openSources(){
+      const html = `
+      <html><head><meta charset="utf-8">
+      <title>Fuentes y créditos – Geoportal FAIS</title>
+      </head>
+      <body style="font-family:system-ui,Segoe UI,Arial;margin:18px;max-width:980px;line-height:1.45">
+        <h2 style="margin:0 0 10px 0;color:#4a148c">Fuentes del proyecto</h2>
+        <div style="border:1px solid #e6e6e6;border-radius:14px;padding:14px">
+          <p style="margin:0 0 10px 0">
+            Lorem, I. P., &amp; Ipsum, D. A. (2018). <i>Lorem ipsum dolor sit amet: Consectetur adipiscing elit en estudios territoriales</i>.
+            <i>Revista Ficticia de Ciencias Sociales</i>, 12(3), 45–67.
+            <a href="https://doi.org/10.1234/lorem.2018.003" target="_blank" rel="noopener">https://doi.org/10.1234/lorem.2018.003</a>
+          </p>
+          <p style="margin:0">
+            Dolor, S. A. (2021). <i>Sit amet, consectetur adipiscing elit: Perspectivas teóricas desde el lorem ipsum</i>. Editorial Ejemplo Académico.
+          </p>
+        </div>
+
+        <h2 style="margin:18px 0 10px 0;color:#4a148c">Créditos de elaboración</h2>
+        <div style="border:1px solid #e6e6e6;border-radius:14px;padding:14px">
+          <p style="margin:0 0 8px 0"><b>Curaduría y sistematización de datos:</b> Vanesa Jaimes López</p>
+          <p style="margin:0"><b>Revisión:</b> Antonio Escobar Ohmstede, José Antonio Bernal Hernández</p>
+        </div>
+
+        <div style="margin-top:16px;font-size:12px;color:#666">
+          Observatorio de Pueblos Indígenas, Recursos Naturales y Medio Ambiente – ProSIG-CSH, CIESAS
+        </div>
+      </body></html>
+      `;
+      const w = window.open("", "_blank");
+      w.document.open();
+      w.document.write(html);
+      w.document.close();
+    }
+
+    document.getElementById("btnSources").addEventListener("click", openSources);
+
+    /********************
      * Capas (dinámicas)
      ********************/
     let capaMexico = null;
@@ -349,6 +546,7 @@
     let capaLoc = null;
 
     function clearMicro(){
+      removeLegend();
       if (capaMun){ map.removeLayer(capaMun); capaMun = null; }
       if (capaLoc){ map.removeLayer(capaLoc); capaLoc = null; }
       setLayerControl({});
@@ -358,9 +556,9 @@
      * Vista nacional
      ********************/
     async function loadMexico(){
-      $("subtitle").textContent = "Mapa nacional – da clic en una entidad";
-      $("statePill").textContent = "Vista: México";
-      $("btnBack").disabled = true;
+      document.getElementById("subtitle").firstElementChild.textContent = "Mapa nacional – da clic en una entidad";
+      document.getElementById("statePill").textContent = "Vista: México";
+      document.getElementById("btnBack").disabled = true;
 
       clearMicro();
       showLoading(true);
@@ -380,18 +578,20 @@
             fillOpacity: 0.22
           },
           onEachFeature: (f, layer) => {
-            const nom = getEntidadNombre(f.properties) || "Entidad";
-            layer.bindTooltip(`<b>${nom}</b><br><span style="color:#cfd3da">Clic para abrir</span>`, { sticky:true });
+            const props = f.properties || {};
+            const nom = getEntidadNombre(props) || "Entidad";
+            const cve = String(props.CVE_EDO ?? "").padStart(2,"0");
 
+            layer.bindTooltip(
+              `<b>${nom}</b><br><span style="color:#cfd3da">Clic para abrir</span>`,
+              { sticky:true }
+            );
+
+            // ✅ click por CVE_EDO (sin confusiones)
             layer.on("click", () => {
-              const found = ESTADOS.find(e =>
-                norm(e.nombre) === norm(nom) ||
-                norm(e.nombre).includes(norm(nom)) ||
-                norm(nom).includes(norm(e.nombre))
-              );
-
-              if (found) enterState(found.slug);
-              else alert("No encuentro esta entidad en la lista ESTADOS del código.\nEntidad detectada: " + nom);
+              const slug = CVE_TO_SLUG[cve];
+              if (slug) enterState(slug);
+              else alert("No hay slug configurado para CVE_EDO=" + cve + " (" + nom + ")");
             });
           }
         }).addTo(map);
@@ -412,16 +612,17 @@
       const st = ESTADOS.find(e => e.slug === slug);
       if (!st) return alert("Slug no encontrado en ESTADOS: " + slug);
 
-      $("subtitle").textContent = st.nombre + " – Microgeoportal";
-      $("statePill").textContent = "Vista: " + st.nombre;
-      $("btnBack").disabled = false;
+      // Actualiza pills
+      document.getElementById("subtitle").firstElementChild.textContent = st.nombre + " – Microgeoportal";
+      document.getElementById("statePill").textContent = "Vista: " + st.nombre;
+      document.getElementById("btnBack").disabled = false;
 
       if (capaMexico) map.removeLayer(capaMexico);
       clearMicro();
       showLoading(true);
 
       try{
-        // Municipios (desde data/ESTADOS/)
+        // Municipios
         const munRes = await fetch(`${DATA_ESTADOS_DIR}/${slug}_mun.geojson`);
         if (!munRes.ok) throw new Error(`No se pudo cargar ${DATA_ESTADOS_DIR}/${slug}_mun.geojson`);
         const mun = await munRes.json();
@@ -447,7 +648,7 @@
           }
         }).addTo(map);
 
-        // Localidades con monto (desde data/ESTADOS/)
+        // Localidades con monto
         const locRes = await fetch(`${DATA_ESTADOS_DIR}/${slug}_loc_monto.geojson`);
         if (!locRes.ok) throw new Error(`No se pudo cargar ${DATA_ESTADOS_DIR}/${slug}_loc_monto.geojson`);
         const loc = await locRes.json();
@@ -467,6 +668,9 @@
           "Localidades (Monto)": capaLoc
         });
 
+        // ✅ Leyenda visible en microgeoportal
+        addLegend();
+
         // Encuadre
         if (st.center && st.zoom){
           map.setView(st.center, st.zoom);
@@ -484,10 +688,12 @@
     /********************
      * Botón regresar
      ********************/
-    $("btnBack").addEventListener("click", () => {
+    document.getElementById("btnBack").addEventListener("click", () => {
       if (capaMun) map.removeLayer(capaMun);
       if (capaLoc) map.removeLayer(capaLoc);
       capaMun = capaLoc = null;
+
+      removeLegend();
 
       if (capaMexico) capaMexico.addTo(map);
       loadMexico();
