@@ -201,10 +201,22 @@
 
     // Busca propiedades de nombre de entidad en la capa nacional
     function getEntidadNombre(props){
-      const keys = ["NOM_ENT","nom_ent","NOMBRE","nombre","NAME","name","ENTIDAD","entidad"];
-      for (const k of keys) if (props && props[k] != null) return props[k];
-      return null;
-    }
+  if (!props) return null;
+
+  // Campos reales de tu mexico_entidades.geojson
+  if (props.NOMBRE_EDO) return props.NOMBRE_EDO;
+
+  // Fallbacks por si luego cambias la capa
+  const otros = [
+    "NOMGEO","NOM_ENT","ENTIDAD","ESTADO","NOMBRE",
+    "NAME","NAME_1","admin_name"
+  ];
+
+  for (const k of otros){
+    if (props[k] != null && String(props[k]).trim() !== "") return props[k];
+  }
+
+  return null;
 
     /********************
      * Map + basemaps
