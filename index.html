@@ -1,0 +1,505 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Geoportal FAIS</title>
+
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+
+  <style>
+    :root{
+      --morado-osc:#4a148c;
+      --morado:#6a1b9a;
+      --morado-med:#8e24aa;
+      --morado-cla:#b39ddb;
+
+      --bg:#0b0b10;
+      --panel:#11121a;
+      --panel2:#161827;
+      --txt:#f4f5f7;
+      --txt2:#cfd3da;
+      --line:rgba(255,255,255,.08);
+
+      --acento:#ffb300;   /* puntos */
+      --acento2:#ff6d00;  /* hover */
+    }
+
+    html,body{height:100%;margin:0;font-family:system-ui,Segoe UI,Arial,sans-serif;background:var(--bg);color:var(--txt);}
+    header{
+      padding:12px 14px;
+      background:linear-gradient(90deg, rgba(74,20,140,.95), rgba(106,27,154,.88));
+      border-bottom:1px solid rgba(255,255,255,.08);
+    }
+    header h1{margin:0;font-size:18px;letter-spacing:.2px;}
+    header .sub{margin-top:3px;font-size:12px;color:var(--txt2);}
+
+    #toolbar{
+      display:flex; flex-wrap:wrap; align-items:center; gap:10px;
+      padding:10px 14px;
+      background:linear-gradient(180deg, rgba(22,24,39,.95), rgba(17,18,26,.92));
+      border-bottom:1px solid var(--line);
+    }
+    .btn{
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(255,255,255,.06);
+      color:var(--txt);
+      padding:8px 10px;
+      border-radius:12px;
+      cursor:pointer;
+      font-size:13px;
+      transition:.15s ease;
+    }
+    .btn:hover{background:rgba(255,255,255,.12);}
+    .btn:disabled{opacity:.45;cursor:not-allowed;}
+    .pill{
+      font-size:12px;
+      color:var(--txt2);
+      padding:7px 10px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(255,255,255,.05);
+    }
+
+    #map{height:calc(100% - 148px);}
+
+    footer{
+      padding:10px 14px;
+      font-size:12px;
+      color:var(--txt2);
+      background:rgba(10,10,16,.92);
+      border-top:1px solid var(--line);
+    }
+
+    /* Spinner */
+    #loading{
+      position:absolute; inset:0;
+      display:none;
+      align-items:center; justify-content:center;
+      background:rgba(0,0,0,.35);
+      z-index:9999;
+      backdrop-filter: blur(2px);
+    }
+    .card{
+      width:min(520px,88vw);
+      background:rgba(17,18,26,.92);
+      border:1px solid rgba(255,255,255,.10);
+      border-radius:18px;
+      padding:16px 16px 14px;
+      box-shadow:0 12px 40px rgba(0,0,0,.35);
+    }
+    .card h3{margin:0 0 6px;font-size:15px;}
+    .card p{margin:0;color:var(--txt2);font-size:12px;line-height:1.35;}
+    .spinner{
+      margin-top:12px;
+      width:32px;height:32px;border-radius:50%;
+      border:3px solid rgba(255,255,255,.18);
+      border-top-color: var(--acento);
+      animation:spin 1s linear infinite;
+    }
+    @keyframes spin{to{transform:rotate(360deg)}}
+
+    /* Leaflet controls dark-ish */
+    .leaflet-control-layers,
+    .leaflet-control-zoom{
+      border:1px solid rgba(255,255,255,.10)!important;
+      background:rgba(17,18,26,.88)!important;
+      color:var(--txt)!important;
+      border-radius:14px!important;
+      box-shadow:none!important;
+    }
+    .leaflet-control-layers label{color:var(--txt2)!important;}
+    .leaflet-control-zoom a{
+      background:transparent!important;color:var(--txt)!important;border-bottom:1px solid rgba(255,255,255,.08)!important;
+    }
+    .leaflet-control-zoom a:last-child{border-bottom:none!important;}
+    .leaflet-tooltip{
+      background:rgba(17,18,26,.92);
+      color:var(--txt);
+      border:1px solid rgba(255,255,255,.10);
+      border-radius:12px;
+      padding:8px 10px;
+      box-shadow:none;
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <h1 id="title">Geoportal del Fondo de Aportaciones para la Infraestructura Social (FAIS)</h1>
+    <div class="sub" id="subtitle">Mapa nacional – da clic en una entidad</div>
+  </header>
+
+  <div id="toolbar">
+    <button id="btnBack" class="btn" disabled>⬅ Regresar al mapa nacional</button>
+    <span class="pill" id="statePill">Vista: México</span>
+    <span class="pill" id="legendPill">Rezago: Alto / Medio / Bajo</span>
+  </div>
+
+  <div id="map"></div>
+
+  <div id="loading">
+    <div class="card">
+      <h3>Cargando datos…</h3>
+      <p>Estoy preparando el microgeoportal de la entidad seleccionada.</p>
+      <div class="spinner"></div>
+    </div>
+  </div>
+
+  <footer>
+    Observatorio de Pueblos Indígenas, Recursos Naturales y Medio Ambiente del ProSIG-CSH, CIESAS.
+  </footer>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    /********************
+     * CONFIG (25 entidades)
+     * Slug = nombre de archivo (ej. puebla_mun.geojson y puebla_loc_monto.geojson)
+     ********************/
+    const ESTADOS = [
+      { slug:"bajacalifornia", nombre:"Baja California", center:[30.5,-115.0], zoom:6 },
+      { slug:"campeche", nombre:"Campeche", center:[19.5,-90.5], zoom:7 },
+      { slug:"chiapas", nombre:"Chiapas", center:[16.7,-92.6], zoom:7 },
+      { slug:"chihuahua", nombre:"Chihuahua", center:[28.6,-106.1], zoom:6 },
+      { slug:"cdmx", nombre:"Ciudad de México", center:[19.43,-99.13], zoom:9 },
+      { slug:"colima", nombre:"Colima", center:[19.2,-103.8], zoom:8 },
+      { slug:"edomex", nombre:"Estado de México", center:[19.3,-99.7], zoom:7 },
+      { slug:"guanajuato", nombre:"Guanajuato", center:[21.0,-101.2], zoom:7 },
+      { slug:"guerrero", nombre:"Guerrero", center:[17.6,-99.9], zoom:7 },
+      { slug:"hidalgo", nombre:"Hidalgo", center:[20.5,-98.9], zoom:7 },
+      { slug:"jalisco", nombre:"Jalisco", center:[20.6,-103.7], zoom:7 },
+      { slug:"michoacan", nombre:"Michoacán", center:[19.1,-101.9], zoom:7 },
+      { slug:"morelos", nombre:"Morelos", center:[18.7,-99.0], zoom:8 },
+      { slug:"nayarit", nombre:"Nayarit", center:[21.8,-104.9], zoom:7 },
+      { slug:"oaxaca", nombre:"Oaxaca", center:[17.1,-96.7], zoom:7 },
+      { slug:"puebla", nombre:"Puebla", center:[19.0,-98.2], zoom:7 },
+      { slug:"queretaro", nombre:"Querétaro", center:[20.8,-99.8], zoom:8 },
+      { slug:"quintanaro", nombre:"Quintana Roo", center:[19.5,-88.4], zoom:7 },
+      { slug:"sanluispotosi", nombre:"San Luis Potosí", center:[22.3,-100.9], zoom:7 },
+      { slug:"sinaloa", nombre:"Sinaloa", center:[25.0,-107.5], zoom:7 },
+      { slug:"sonora", nombre:"Sonora", center:[29.3,-110.3], zoom:6 },
+      { slug:"tabasco", nombre:"Tabasco", center:[17.9,-92.6], zoom:8 },
+      { slug:"tlaxcala", nombre:"Tlaxcala", center:[19.4,-98.1], zoom:9 },
+      { slug:"yucatan", nombre:"Yucatán", center:[20.7,-88.9], zoom:7 },
+      { slug:"zacatecas", nombre:"Zacatecas", center:[23.3,-102.7], zoom:7 }
+    ];
+
+    /********************
+     * Helpers
+     ********************/
+    const $ = (id) => document.getElementById(id);
+    function showLoading(on){ $("loading").style.display = on ? "flex" : "none"; }
+
+    // Normaliza (quita acentos) para matching de nombres
+    function norm(s){
+      return (s ?? "")
+        .toString()
+        .trim()
+        .toLowerCase()
+        .normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    }
+
+    // Busca propiedades de nombre de entidad en la capa nacional
+    function getEntidadNombre(props){
+      const keys = ["NOM_ENT","nom_ent","NOMBRE","nombre","NAME","name","ENTIDAD","entidad"];
+      for (const k of keys) if (props && props[k] != null) return props[k];
+      return null;
+    }
+
+    /********************
+     * Map + basemaps
+     ********************/
+    const map = L.map("map", { zoomControl:true }).setView([23.6,-102.5], 5);
+
+    const osm = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution:"© OpenStreetMap"
+    });
+
+    const sat = L.tileLayer(
+      "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+      { attribution:"Tiles © Esri" }
+    );
+
+    osm.addTo(map);
+
+    let layersControl = null;
+    function setLayerControl(overlays){
+      if (layersControl) map.removeControl(layersControl);
+      layersControl = L.control.layers(
+        { "OpenStreetMap": osm, "Satélite": sat },
+        overlays || {},
+        { collapsed:false }
+      ).addTo(map);
+    }
+
+    /********************
+     * Rezago (3 tipos) usando EXACTAMENTE: "GRADO DE REZAGO"
+     ********************/
+    const REZAGO_FIELD = "GRADO DE REZAGO";
+
+    function rezagoNivel(raw){
+      const s = norm(raw);
+
+      // 3 tipos (tolerante a variantes comunes)
+      // Alto: "alto", "alta", "mayor rezago", etc.
+      // Medio: "medio", "media"
+      // Bajo: "bajo", "baja", "menor rezago"
+      if (!s) return "Sin dato";
+      if (s.includes("alto") || s.includes("mayor")) return "Alto";
+      if (s.includes("medio")) return "Medio";
+      if (s.includes("bajo") || s.includes("menor")) return "Bajo";
+
+      // si viene con código o abreviaturas, intenta:
+      if (s === "a") return "Alto";
+      if (s === "m") return "Medio";
+      if (s === "b") return "Bajo";
+
+      return "Sin dato";
+    }
+
+    function colorRezago3(nivel){
+      // púrpuras transparentes pero visibles
+      // Alto = más oscuro
+      if (nivel === "Alto") return "#4a148c";
+      if (nivel === "Medio") return "#7b1fa2";
+      if (nivel === "Bajo") return "#b39ddb";
+      return "#d1c4e9";
+    }
+
+    /********************
+     * Puntos (simbología mejorada + tamaño por monto si existe)
+     ********************/
+    function getMonto(props){
+      // Si existe un campo de monto, lo detectamos (sin depender de uno solo)
+      const candidates = [
+        "MONTO","monto","MONTO_TOTAL","monto_total","MONTO_FAIS","MONTO FAIS",
+        "IMPORTE","importe","ASIGNACION","asignacion","TOTAL","total"
+      ];
+      for (const k of candidates) if (props && props[k] != null && props[k] !== "") return props[k];
+      return null;
+    }
+
+    function parseNum(x){
+      if (x == null) return null;
+      const s = x.toString().replace(/[^0-9.\-]/g,"");
+      const n = Number(s);
+      return Number.isFinite(n) ? n : null;
+    }
+
+    function puntoStyle(props){
+      const monto = parseNum(getMonto(props));
+      // radio: base 6, hasta 14 aprox
+      const r = monto == null ? 7 : Math.max(6, Math.min(14, 6 + Math.sqrt(monto)/120));
+
+      return {
+        radius: r,
+        fillColor: "var(--acento)",
+        color: "rgba(0,0,0,.55)",
+        weight: 1.2,
+        fillOpacity: 0.95
+      };
+    }
+
+    function pointToLayer(feature, latlng){
+      return L.circleMarker(latlng, puntoStyle(feature.properties || {}));
+    }
+
+    /********************
+     * Ficha vertical en pestaña nueva
+     ********************/
+    function openFicha(estadoNombre, props){
+      const keys = Object.keys(props || {});
+      const rows = keys.map(k => {
+        const v = props[k];
+        return `
+          <div style="padding:10px 0;border-bottom:1px solid #eee">
+            <div style="font-size:12px;color:#6b6b6b">${k}</div>
+            <div style="font-size:15px"><b>${(v ?? "").toString()}</b></div>
+          </div>`;
+      }).join("");
+
+      const html = `
+      <html><head><meta charset="utf-8">
+      <title>Ficha – ${estadoNombre}</title>
+      </head>
+      <body style="font-family:system-ui,Segoe UI,Arial;margin:18px;max-width:980px">
+        <div style="border-radius:18px;padding:18px;border:1px solid #e6e6e6">
+          <div style="font-size:12px;color:#666;margin-bottom:6px">
+            Observatorio de Pueblos Indígenas, Recursos Naturales y Medio Ambiente – ProSIG-CSH, CIESAS
+          </div>
+          <h2 style="margin:0 0 4px 0;color:#4a148c">
+            Mapa interactivo del Fondo de Aportaciones para la Infraestructura Social (FAIS)
+          </h2>
+          <div style="color:#555;margin-bottom:14px">${estadoNombre} – Ficha de localidad / monto</div>
+          <div style="border:1px solid #f0f0f0;border-radius:14px;padding:14px">
+            ${rows || "<i>Sin metadatos.</i>"}
+          </div>
+        </div>
+      </body></html>`;
+
+      const w = window.open("", "_blank");
+      w.document.open();
+      w.document.write(html);
+      w.document.close();
+    }
+
+    /********************
+     * Capas (dinámicas)
+     ********************/
+    let capaMexico = null;
+    let capaMun = null;
+    let capaLoc = null;
+
+    function clearMicro(){
+      if (capaMun){ map.removeLayer(capaMun); capaMun = null; }
+      if (capaLoc){ map.removeLayer(capaLoc); capaLoc = null; }
+      setLayerControl({});
+    }
+
+    /********************
+     * Vista nacional
+     ********************/
+    async function loadMexico(){
+      $("subtitle").textContent = "Mapa nacional – da clic en una entidad";
+      $("statePill").textContent = "Vista: México";
+      $("btnBack").disabled = true;
+
+      clearMicro();
+      showLoading(true);
+
+      try{
+        const res = await fetch("data/mexico_entidades.geojson");
+        if (!res.ok) throw new Error("No se pudo cargar data/mexico_entidades.geojson");
+        const data = await res.json();
+
+        if (capaMexico) map.removeLayer(capaMexico);
+
+        capaMexico = L.geoJSON(data, {
+          style: {
+            color:"#7b1fa2",
+            weight: 1,
+            fillColor:"#6a1b9a",
+            fillOpacity: 0.22
+          },
+          onEachFeature: (f, layer) => {
+            const nom = getEntidadNombre(f.properties) || "Entidad";
+            layer.bindTooltip(`<b>${nom}</b><br><span style="color:#cfd3da">Clic para abrir</span>`, { sticky:true });
+
+            layer.on("click", () => {
+              // matching por nombre normalizado
+              const found = ESTADOS.find(e => norm(e.nombre) === norm(nom));
+              if (found) enterState(found.slug);
+              else alert("No encuentro esta entidad en la lista ESTADOS del código.\nEntidad detectada: " + nom);
+            });
+          }
+        }).addTo(map);
+
+        map.setView([23.6,-102.5], 5);
+        setLayerControl({});
+      }catch(err){
+        alert("Error en vista nacional: " + err.message);
+      }finally{
+        showLoading(false);
+      }
+    }
+
+    /********************
+     * Microgeoportal por entidad (carga dinámica)
+     ********************/
+    async function enterState(slug){
+      const st = ESTADOS.find(e => e.slug === slug);
+      if (!st) return alert("Slug no encontrado en ESTADOS: " + slug);
+
+      $("subtitle").textContent = st.nombre + " – Microgeoportal";
+      $("statePill").textContent = "Vista: " + st.nombre;
+      $("btnBack").disabled = false;
+
+      if (capaMexico) map.removeLayer(capaMexico);
+      clearMicro();
+      showLoading(true);
+
+      try{
+        // Municipios
+        const munRes = await fetch(`data/${slug}_mun.geojson`);
+        if (!munRes.ok) throw new Error(`No se pudo cargar data/${slug}_mun.geojson`);
+        const mun = await munRes.json();
+
+        capaMun = L.geoJSON(mun, {
+          style: f => {
+            const nivel = rezagoNivel((f.properties || {})[REZAGO_FIELD]);
+            return {
+              color: "rgba(74,20,140,.65)",
+              weight: 0.7,
+              fillColor: colorRezago3(nivel),
+              fillOpacity: 0.55
+            };
+          },
+          onEachFeature: (f, layer) => {
+            const props = f.properties || {};
+            // tooltip simple: municipio + rezago
+            const nom = props.NOM_MUN || props.NOMBRE || props.MUNICIPIO || props.municipio || "Municipio";
+            const nivel = rezagoNivel(props[REZAGO_FIELD]);
+            layer.bindTooltip(
+              `<b>${nom}</b><br><span style="color:#cfd3da">${REZAGO_FIELD}: </span>${nivel}`,
+              { sticky:true }
+            );
+          }
+        }).addTo(map);
+
+        // Localidades con monto
+        const locRes = await fetch(`data/${slug}_loc_monto.geojson`);
+        if (!locRes.ok) throw new Error(`No se pudo cargar data/${slug}_loc_monto.geojson`);
+        const loc = await locRes.json();
+
+        capaLoc = L.geoJSON(loc, {
+          pointToLayer,
+          onEachFeature: (f, layer) => {
+            // efecto hover
+            layer.on("mouseover", () => {
+              layer.setStyle({ fillColor:"var(--acento2)" });
+            });
+            layer.on("mouseout", () => {
+              layer.setStyle(puntoStyle(f.properties || {}));
+            });
+            layer.on("click", () => openFicha(st.nombre, f.properties || {}));
+          }
+        }).addTo(map);
+
+        // Controles
+        setLayerControl({
+          "Municipios (GRADO DE REZAGO)": capaMun,
+          "Localidades (Monto)": capaLoc
+        });
+
+        // Encuadre
+        if (st.center && st.zoom){
+          map.setView(st.center, st.zoom);
+        }else{
+          map.fitBounds(capaMun.getBounds(), { padding:[20,20] });
+        }
+
+      }catch(err){
+        alert("Error en microgeoportal: " + err.message);
+      }finally{
+        showLoading(false);
+      }
+    }
+
+    /********************
+     * Botón regresar
+     ********************/
+    $("btnBack").addEventListener("click", () => {
+      // limpia y vuelve a nacional
+      if (capaMun) map.removeLayer(capaMun);
+      if (capaLoc) map.removeLayer(capaLoc);
+      capaMun = capaLoc = null;
+
+      if (capaMexico) capaMexico.addTo(map);
+      loadMexico();
+    });
+
+    // INIT
+    loadMexico();
+  </script>
+</body>
+</html>
