@@ -154,7 +154,7 @@
   <script>
     /********************
      * CONFIG (25 entidades)
-     * Slug = nombre de archivo (ej. puebla_mun.geojson y puebla_loc_monto.geojson)
+     * Slug = nombre de archivo (en data/ESTADOS/)
      ********************/
     const ESTADOS = [
       { slug:"bajacalifornia", nombre:"Baja California", center:[30.5,-115.0], zoom:6 },
@@ -184,13 +184,15 @@
       { slug:"zacatecas", nombre:"Zacatecas", center:[23.3,-102.7], zoom:7 }
     ];
 
+    // Carpeta donde están las 50 capas
+    const DATA_ESTADOS_DIR = "data/ESTADOS";
+
     /********************
      * Helpers
      ********************/
     const $ = (id) => document.getElementById(id);
     function showLoading(on){ $("loading").style.display = on ? "flex" : "none"; }
 
-    // Normaliza (quita acentos) para matching de nombres
     function norm(s){
       return (s ?? "")
         .toString()
@@ -199,24 +201,21 @@
         .normalize("NFD").replace(/[\u0300-\u036f]/g, "");
     }
 
-    // Busca propiedades de nombre de entidad en la capa nacional
+    // ✅ Ajustado a tu capa nacional: NOMBRE_EDO
     function getEntidadNombre(props){
-  if (!props) return null;
+      if (!props) return null;
+      if (props.NOMBRE_EDO) return props.NOMBRE_EDO;
 
-  // Campos reales de tu mexico_entidades.geojson
-  if (props.NOMBRE_EDO) return props.NOMBRE_EDO;
+      const otros = [
+        "NOMGEO","NOM_ENT","ENTIDAD","ESTADO","NOMBRE",
+        "NAME","NAME_1","admin_name"
+      ];
 
-  // Fallbacks por si luego cambias la capa
-  const otros = [
-    "NOMGEO","NOM_ENT","ENTIDAD","ESTADO","NOMBRE",
-    "NAME","NAME_1","admin_name"
-  ];
-
-  for (const k of otros){
-    if (props[k] != null && String(props[k]).trim() !== "") return props[k];
-  }
-
-  return null;
+      for (const k of otros){
+        if (props[k] != null && String(props[k]).trim() !== "") return props[k];
+      }
+      return null;
+    }
 
     /********************
      * Map + basemaps
@@ -251,27 +250,17 @@
 
     function rezagoNivel(raw){
       const s = norm(raw);
-
-      // 3 tipos (tolerante a variantes comunes)
-      // Alto: "alto", "alta", "mayor rezago", etc.
-      // Medio: "medio", "media"
-      // Bajo: "bajo", "baja", "menor rezago"
       if (!s) return "Sin dato";
       if (s.includes("alto") || s.includes("mayor")) return "Alto";
       if (s.includes("medio")) return "Medio";
       if (s.includes("bajo") || s.includes("menor")) return "Bajo";
-
-      // si viene con código o abreviaturas, intenta:
       if (s === "a") return "Alto";
       if (s === "m") return "Medio";
       if (s === "b") return "Bajo";
-
       return "Sin dato";
     }
 
     function colorRezago3(nivel){
-      // púrpuras transparentes pero visibles
-      // Alto = más oscuro
       if (nivel === "Alto") return "#4a148c";
       if (nivel === "Medio") return "#7b1fa2";
       if (nivel === "Bajo") return "#b39ddb";
@@ -282,7 +271,6 @@
      * Puntos (simbología mejorada + tamaño por monto si existe)
      ********************/
     function getMonto(props){
-      // Si existe un campo de monto, lo detectamos (sin depender de uno solo)
       const candidates = [
         "MONTO","monto","MONTO_TOTAL","monto_total","MONTO_FAIS","MONTO FAIS",
         "IMPORTE","importe","ASIGNACION","asignacion","TOTAL","total"
@@ -300,9 +288,7 @@
 
     function puntoStyle(props){
       const monto = parseNum(getMonto(props));
-      // radio: base 6, hasta 14 aprox
       const r = monto == null ? 7 : Math.max(6, Math.min(14, 6 + Math.sqrt(monto)/120));
-
       return {
         radius: r,
         fillColor: "var(--acento)",
@@ -398,8 +384,12 @@
             layer.bindTooltip(`<b>${nom}</b><br><span style="color:#cfd3da">Clic para abrir</span>`, { sticky:true });
 
             layer.on("click", () => {
-              // matching por nombre normalizado
-              const found = ESTADOS.find(e => norm(e.nombre) === norm(nom));
+              const found = ESTADOS.find(e =>
+                norm(e.nombre) === norm(nom) ||
+                norm(e.nombre).includes(norm(nom)) ||
+                norm(nom).includes(norm(e.nombre))
+              );
+
               if (found) enterState(found.slug);
               else alert("No encuentro esta entidad en la lista ESTADOS del código.\nEntidad detectada: " + nom);
             });
@@ -431,9 +421,9 @@
       showLoading(true);
 
       try{
-        // Municipios
-        const munRes = await fetch(`data/${slug}_mun.geojson`);
-        if (!munRes.ok) throw new Error(`No se pudo cargar data/${slug}_mun.geojson`);
+        // Municipios (desde data/ESTADOS/)
+        const munRes = await fetch(`${DATA_ESTADOS_DIR}/${slug}_mun.geojson`);
+        if (!munRes.ok) throw new Error(`No se pudo cargar ${DATA_ESTADOS_DIR}/${slug}_mun.geojson`);
         const mun = await munRes.json();
 
         capaMun = L.geoJSON(mun, {
@@ -448,7 +438,6 @@
           },
           onEachFeature: (f, layer) => {
             const props = f.properties || {};
-            // tooltip simple: municipio + rezago
             const nom = props.NOM_MUN || props.NOMBRE || props.MUNICIPIO || props.municipio || "Municipio";
             const nivel = rezagoNivel(props[REZAGO_FIELD]);
             layer.bindTooltip(
@@ -458,21 +447,16 @@
           }
         }).addTo(map);
 
-        // Localidades con monto
-        const locRes = await fetch(`data/${slug}_loc_monto.geojson`);
-        if (!locRes.ok) throw new Error(`No se pudo cargar data/${slug}_loc_monto.geojson`);
+        // Localidades con monto (desde data/ESTADOS/)
+        const locRes = await fetch(`${DATA_ESTADOS_DIR}/${slug}_loc_monto.geojson`);
+        if (!locRes.ok) throw new Error(`No se pudo cargar ${DATA_ESTADOS_DIR}/${slug}_loc_monto.geojson`);
         const loc = await locRes.json();
 
         capaLoc = L.geoJSON(loc, {
           pointToLayer,
           onEachFeature: (f, layer) => {
-            // efecto hover
-            layer.on("mouseover", () => {
-              layer.setStyle({ fillColor:"var(--acento2)" });
-            });
-            layer.on("mouseout", () => {
-              layer.setStyle(puntoStyle(f.properties || {}));
-            });
+            layer.on("mouseover", () => layer.setStyle({ fillColor:"var(--acento2)" }));
+            layer.on("mouseout", () => layer.setStyle(puntoStyle(f.properties || {})));
             layer.on("click", () => openFicha(st.nombre, f.properties || {}));
           }
         }).addTo(map);
@@ -501,7 +485,6 @@
      * Botón regresar
      ********************/
     $("btnBack").addEventListener("click", () => {
-      // limpia y vuelve a nacional
       if (capaMun) map.removeLayer(capaMun);
       if (capaLoc) map.removeLayer(capaLoc);
       capaMun = capaLoc = null;
