@@ -40,51 +40,11 @@
       overflow:hidden;
     }
 
-    /* ✅ Layout robusto: header + toolbar + map + footer */
-    body{
-      display:flex;
-      flex-direction:column;
-      height:100%;
-    }
-
     header{
       padding:12px 14px;
       background:linear-gradient(90deg, rgba(74,20,140,.95), rgba(106,27,154,.88));
       border-bottom:1px solid rgba(255,255,255,.10);
     }
-
-    /* ✅ Barra de logos (nueva) */
-    .brandbar{
-      display:flex;
-      justify-content:center;
-      align-items:center;
-      gap:14px;
-      flex-wrap:wrap;
-      margin-bottom:10px;
-    }
-    .brandbar a{
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      padding:6px 8px;
-      border-radius:12px;
-      border:1px solid rgba(255,255,255,.10);
-      background:rgba(255,255,255,.06);
-      transition:.15s ease;
-    }
-    .brandbar a:hover{
-      background:rgba(255,255,255,.12);
-    }
-    .brandbar img{
-      display:block;
-      height:44px;          /* tamaño base */
-      max-width:160px;      /* evita logos enormes */
-      width:auto;
-      object-fit:contain;
-      filter: drop-shadow(0 2px 10px rgba(0,0,0,.25));
-    }
-    /* Jerarquía visual: CIESAS ligeramente más grande */
-    .brandbar img.logo-ciesas{ height:52px; max-width:180px; }
 
     /* ✅ título centrado */
     header h1{
@@ -160,8 +120,7 @@
       white-space:nowrap;
     }
 
-    /* ✅ ahora el mapa ocupa el espacio sobrante */
-    #map{ flex:1; }
+    #map{height:calc(100% - 178px);} /* header + toolbar + footer */
 
     footer{
       padding:10px 14px;
@@ -260,12 +219,18 @@
       flex:0 0 auto;
     }
 
-    /* ✅ Impresión/PDF: mostrar solo el mapa */
+    .dot{
+      width:12px;height:12px;border-radius:50%;
+      background:var(--acento);
+      border:1px solid rgba(0,0,0,.55);
+      flex:0 0 auto;
+    }
+
     @media print{
-      header, #toolbar, footer { display:none !important; }
-      html, body { height:100% !important; overflow:visible !important; background:#fff !important; }
-      #map { height:100vh !important; flex:none !important; }
-      .leaflet-control-container { display:none !important; } /* evita botones encima del PDF */
+      header, #toolbar, footer, #loading{ display:none !important; }
+      html, body{ height:100% !important; overflow:visible !important; }
+      #map{ height:100vh !important; }
+      .leaflet-control-container{ display:none !important; } /* opcional: sin controles */
     }
 
   </style>
@@ -273,23 +238,6 @@
 
 <body>
   <header>
-
-    <!-- ✅ Logos en header (nuevos) -->
-    <div class="brandbar" aria-label="Logotipos institucionales">
-      <a href="https://ciesas.edu.mx/" target="_blank" rel="noopener" title="CIESAS">
-        <img class="logo-ciesas" src="assets/logos/logo-ciesas.svg" alt="CIESAS">
-      </a>
-
-      <!-- Si ProSIG no tiene sitio propio, puedes dejar href="#" o poner la página institucional -->
-      <a href="https://prosigcsh.ciesas.edu.mx/" target="_blank" rel="noopener" title="ProSIG-CSH">
-        <img src="assets/logos/logo-prosig.svg" alt="ProSIG-CSH">
-      </a>
-
-      <a href="https://opirna.ciesas.edu.mx" target="_blank" rel="noopener" title="OPIRNA">
-        <img src="assets/logos/logo-opirna.svg" alt="OPIRNA">
-      </a>
-    </div>
-
     <h1 id="title">Geoportal del Fondo de Aportaciones para la Infraestructura Social (FAIS)</h1>
 
     <div class="sub" id="subtitle">
@@ -307,11 +255,9 @@
 
     <!-- ✅ botón de fuentes -->
     <button id="btnSources" class="btn">📚 Fuentes y créditos</button>
-  
-
     <button id="btnMethod" class="btn">🧾 Metodología</button>
     <button id="btnPrint" class="btn">🖨️ Imprimir / PDF</button>
-</div>
+  </div>
 
   <div id="map"></div>
 
@@ -326,6 +272,53 @@
   <footer>
     Observatorio de Pueblos Indígenas, Recursos Naturales y Medio Ambiente del ProSIG-CSH, CIESAS.
   </footer>
+
+
+  <!-- ✅ Texto Metodología embebido (evita errores de comillas en JS) -->
+  <template id="tplMethod">
+    <html><head><meta charset="utf-8">
+      <title>Metodología – Geoportal FAIS</title>
+    </head>
+    <body style="font-family:system-ui,Segoe UI,Arial;margin:18px;max-width:980px;line-height:1.55">
+      <div style="font-size:12px;color:#666;margin-bottom:8px">
+        Observatorio de Pueblos Indígenas, Recursos Naturales y Medio Ambiente – ProSIG-CSH, CIESAS
+      </div>
+      <h1>Metodología</h1>
+      <p>El geoportal del Fondo de Aportaciones para la Infraestructura Social (FAIS) se desarrolló a partir de un proceso sistemático de recopilación, depuración, integración y análisis de información estadística y geoespacial. La metodología se estructuró en tres etapas principales: obtención y procesamiento de datos, construcción de bases de datos complementarias y generación de capas geográficas para su integración en un entorno de Sistema de Información Geográfica en línea.</p>
+<h2>1. Recopilación y procesamiento de información</h2>
+<p>A inicios del año 2025 se publicaron los resultados correspondientes a la asignación de recursos del FAIS por localidad en una plataforma oficial del gobierno federal , en formato PDF descargable. Se procedió a la descarga de la totalidad de los archivos disponibles; no obstante, algunos estados no contaban con información publicada debido a periodos electorales en curso (Durango y Veracruz) y algunos otros tenían información de otro estado (Coahuila contenía la información de la Ciudad de México) y en algunos otros solo no tenían disponibles datos para descargar (Aguascalientes, Baja California Sur, Nuevo León y Tamaulipas).</p>
+<p>Dado que los archivos en PDF contenían información tabular en un formato estático y no editable, se realizó una conversión de éstos a formato Excel (xls.) mediante librerías de Python. Este tipo de herramientas permiten automatizar las tareas que llevarían mucho tiempo desarrollar manualmente, asimismo facilitan el manejo y análisis de los datos. Un inconveniente identificado durante este proceso fue que aquellos archivos PDF que contenían más de una página generaron múltiples hojas dentro del archivo Excel correspondiente, por lo que fue necesario integrar manualmente las hojas en una sola base consolidada por entidad federativa, lo cual implico una inversión de tiempo considerable. Por esta razón es importante destacar que, en cualquier proceso automatizado, la curación y el ojo crítico de quien trabaja con los datos es imprescindible para asegurar que la información sea confiable.</p>
+<p>Posteriormente, se llevó a cabo la separación manual de la columna que contenía conjuntamente el nombre de la localidad y la clave geoestadística del Instituto Nacional de Estadística y Geografía (INEGI), con el propósito de disponer de esta última como identificador único. La clave INEGI permitió realizar un cruce de información para incorporar las coordenadas geográficas de cada localidad. El procedimiento se efectuó mediante librerías de Python por medio de un proceso conocido como geoparsing. Proceso que permite agregar coordenadas geográficas a nombres geográficos de forma automatizada mediante diccionarios espaciales; sin embargo, en los casos en que no existió coincidencia automática, las coordenadas fueron buscadas e incorporadas manualmente, utilizando la base de datos nacional, que contienen todas las localidades del país.</p>
+<p>Como resultado de esta etapa, se obtuvo una primera base de datos consolidada a nivel localidad, que integra la asignación de recursos del FAIS y su respectiva ubicación geográfica.</p>
+<h2>2. Construcción de base de datos complementaria a nivel municipal</h2>
+<p>Derivado de observaciones realizadas durante la presentación de avances del proyecto ante los compañeros del equipo, se consideró pertinente complementar el análisis con una segunda base de datos a nivel municipal. Para ello, se elaboró un archivo Excel adicional en el que, por cada estado, se desagregaron los municipios y se incorporaron las siguientes variables:</p>
+<p>Población total (Censo de Población y Vivienda 2020, INEGI).</p>
+<p>Población en situación de pobreza (Censo de Población y Vivienda 2020, INEGI).</p>
+<p>Población en situación de pobreza extrema (Censo de Población y Vivienda 2020, INEGI).</p>
+<p>Grado de rezago social (CONEVAL, 2020).</p>
+<p>Autoadscripción indígena (Censo de Población y Vivienda 2020, INEGI).</p>
+<p>Porcentaje de población con autoadscripción indígena (Censo de Población y Vivienda 2020, INEGI).</p>
+<p>Número de localidades beneficiadas por el FAIS (calculado mediante suma manual).</p>
+<p>Monto total asignado por municipio y número total de localidades beneficiadas por municipio (calculado mediante suma manual).</p>
+<p>Esta base permitió vincular la asignación de recursos con indicadores sociodemográficos relevantes para su análisis.</p>
+<p>Monto total asignado por estado y número total de localidades beneficiadas por estado (calculado mediante suma manual).</p>
+<h2>3. Generación de capas geográficas en QGIS</h2>
+<p>Para la representación espacial de la información, se utilizó el software QGIS. Se generaron dos capas principales por cada entidad federativa:</p>
+<p>En primer lugar, se descargó el Marco Geoestadístico Nacional (INEGI, 2020) en formato shapefile (SHP), correspondiente a los límites municipales de cada estado, el cual fungió como base cartográfica.</p>
+<p>Posteriormente, se incorporó la primera base de datos (a nivel localidad) y, mediante la herramienta “Crear capa de puntos a partir de tabla”, se generó una capa de puntos que representa la ubicación geográfica de las localidades beneficiadas con recursos del FAIS.</p>
+<p>En segundo lugar, para la base de datos municipal, se realizó una unión entre el shapefile de municipios y la tabla correspondiente, utilizando como campo común el nombre del municipio. Este procedimiento permitió generar una capa poligonal que integra los límites municipales con los indicadores sociodemográficos y los montos asignados.</p>
+<p>Finalmente, ambas capas fueron utilizadas como material principal para la construcción del geoportal, el cual integra la visualización interactiva de la distribución territorial de los recursos del FAIS y sus variables asociadas.</p>
+<h2>Alcance General</h2>
+<p>Analizar y representar espacialmente la distribución de los recursos del FAIS a nivel localidad y municipio, mediante la integración de información estadística y geoespacial en un entorno SIG.</p>
+<h2>Alcances Específicos</h2>
+<ul><li>Sistematización y depuración de información oficial del FAIS (2025).</li><li>Conversión y estructuración de bases de datos a partir de archivos PDF.</li><li>Georreferenciación de localidades beneficiadas mediante clave INEGI.</li><li>Construcción de base municipal con indicadores sociodemográficos.</li><li>Integración y análisis exploratorio de variables sociales y montos asignados.</li><li>Generación de capas geográficas en QGIS (puntos y polígonos).</li><li>Desarrollo de un geoportal interactivo para consulta pública.</li><li>Diseño de una metodología replicable para futuros análisis.</li></ul>
+<h2>El proyecto no contempla:</h2>
+<ul><li>Evaluación de impacto del FAIS.</li><li>Trabajo de campo en localidades beneficiadas.</li><li>Análisis causal profundo.</li></ul>
+<h2>¿Qué esperamos de los datos?</h2>
+<ul><li>Identificar patrones territoriales en la asignación de recursos.</li><li>Analizar la correspondencia entre montos asignados y niveles de pobreza o rezago social.</li><li>Detectar posibles concentraciones o dispersión de apoyos a nivel municipal y local.</li><li>Visualizar la relación entre inversión pública y presencia de población indígena.</li><li>Generar evidencia cartográfica que facilite la comprensión de la distribución del FAIS.</li><li>Aportar insumos para futuras evaluaciones y toma de decisiones.</li></ul>
+    </body></html>
+  </template>
+
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script>
@@ -517,12 +510,8 @@
           <div class="row"><span class="swatch" style="background:var(--rez-medio)"></span> Medio</div>
           <div class="row"><span class="swatch" style="background:var(--rez-bajo)"></span> Bajo</div>
           <div class="row"><span class="swatch" style="background:var(--rez-sd)"></span> Sin dato</div>
-        
-          <div class="row">
-            <span class="swatch" style="background:var(--acento); border-radius:999px"></span>
-            Localidades beneficiadas por el FAIS
-          </div>
-`;
+          <div class="row"><span class="dot"></span> Localidades beneficiadas por el FAIS</div>
+        `;
         return div;
       };
       legendControl.addTo(map);
@@ -539,11 +528,6 @@
      * Ficha vertical en pestaña nueva
      ********************/
     function openFicha(estadoNombre, props){
-      // ✅ Nombre de localidad al inicio de la ficha
-      const locName =
-        (props && (props.NOMGEO || props.NOM_LOC || props.NOMBRE_LOC || props.LOCALIDAD || props.localidad || props.NOM || props.NOMBRE)) ||
-        "Localidad";
-
       const keys = Object.keys(props || {});
       const rows = keys.map(k => {
         const v = props[k];
@@ -556,7 +540,7 @@
 
       const html = `
       <html><head><meta charset="utf-8">
-      <title>Ficha – ${locName} (${estadoNombre})</title>
+      <title>Ficha – ${estadoNombre}</title>
       </head>
       <body style="font-family:system-ui,Segoe UI,Arial;margin:18px;max-width:980px">
         <div style="border-radius:18px;padding:18px;border:1px solid #e6e6e6">
@@ -567,8 +551,10 @@
             Mapa interactivo del Fondo de Aportaciones para la Infraestructura Social (FAIS)
           </h2>
           
-          <div style="font-size:18px;margin:6px 0 10px 0"><b>${locName}</b></div>
-<div style="color:#555;margin-bottom:14px">${estadoNombre} – ${locName}</div>
+          <div style="margin:0 0 10px 0;font-size:16px;color:#111">
+            <b>${(props && (props.NOMGEO || props.NOM_LOC || props.NOMBRE_LOC || props.LOCALIDAD || props.localidad || props.NOM || props.NOMBRE)) ? (props.NOMGEO || props.NOM_LOC || props.NOMBRE_LOC || props.LOCALIDAD || props.localidad || props.NOM || props.NOMBRE) : "Localidad"}</b>
+          </div>
+<div style="color:#555;margin-bottom:14px">${estadoNombre} – Ficha de localidad / monto</div>
           <div style="border:1px solid #f0f0f0;border-radius:14px;padding:14px">
             ${rows || "<i>Sin metadatos.</i>"}
           </div>
@@ -625,23 +611,21 @@
      * Ventana: Metodología
      ********************/
     function openMethod(){
-      const html = "<html><head><meta charset=\"utf-8\">\n<title>Metodolog\u00eda \u2013 Geoportal FAIS</title>\n</head>\n<body style=\"font-family:system-ui,Segoe UI,Arial;margin:18px;max-width:980px;line-height:1.55\">\n<div style=\"font-size:12px;color:#666;margin-bottom:8px\">Observatorio de Pueblos Ind\u00edgenas, Recursos Naturales y Medio Ambiente \u2013 ProSIG-CSH, CIESAS</div>\n<h1>Metodolog\u00eda</h1><p>El geoportal del Fondo de Aportaciones para la Infraestructura Social (FAIS) se desarroll\u00f3 a partir de un proceso sistem\u00e1tico de recopilaci\u00f3n, depuraci\u00f3n, integraci\u00f3n y an\u00e1lisis de informaci\u00f3n estad\u00edstica y geoespacial. La metodolog\u00eda se estructur\u00f3 en tres etapas principales: obtenci\u00f3n y procesamiento de datos, construcci\u00f3n de bases de datos complementarias y generaci\u00f3n de capas geogr\u00e1ficas para su integraci\u00f3n en un entorno de Sistema de Informaci\u00f3n Geogr\u00e1fica en l\u00ednea.</p><h2>1. Recopilaci\u00f3n y procesamiento de informaci\u00f3n</h2><p>A inicios del a\u00f1o 2025 se publicaron los resultados correspondientes a la asignaci\u00f3n de recursos del FAIS por localidad en una plataforma oficial del gobierno federal , en formato PDF descargable. Se procedi\u00f3 a la descarga de la totalidad de los archivos disponibles; no obstante, algunos estados no contaban con informaci\u00f3n publicada debido a periodos electorales en curso (Durango y Veracruz) y algunos otros ten\u00edan informaci\u00f3n de otro estado (Coahuila conten\u00eda la informaci\u00f3n de la Ciudad de M\u00e9xico) y en algunos otros solo no ten\u00edan disponibles datos para descargar (Aguascalientes, Baja California Sur, Nuevo Le\u00f3n y Tamaulipas).</p><p>Dado que los archivos en PDF conten\u00edan informaci\u00f3n tabular en un formato est\u00e1tico y no editable, se realiz\u00f3 una conversi\u00f3n de \u00e9stos a formato Excel (xls.) mediante librer\u00edas de Python. Este tipo de herramientas permiten automatizar las tareas que llevar\u00edan mucho tiempo desarrollar manualmente, asimismo facilitan el manejo y an\u00e1lisis de los datos. Un inconveniente identificado durante este proceso fue que aquellos archivos PDF que conten\u00edan m\u00e1s de una p\u00e1gina generaron m\u00faltiples hojas dentro del archivo Excel correspondiente, por lo que fue necesario integrar manualmente las hojas en una sola base consolidada por entidad federativa, lo cual implico una inversi\u00f3n de tiempo considerable. Por esta raz\u00f3n es importante destacar que, en cualquier proceso automatizado, la curaci\u00f3n y el ojo cr\u00edtico de quien trabaja con los datos es imprescindible para asegurar que la informaci\u00f3n sea confiable.</p><p>Posteriormente, se llev\u00f3 a cabo la separaci\u00f3n manual de la columna que conten\u00eda conjuntamente el nombre de la localidad y la clave geoestad\u00edstica del Instituto Nacional de Estad\u00edstica y Geograf\u00eda (INEGI), con el prop\u00f3sito de disponer de esta \u00faltima como identificador \u00fanico. La clave INEGI permiti\u00f3 realizar un cruce de informaci\u00f3n para incorporar las coordenadas geogr\u00e1ficas de cada localidad. El procedimiento se efectu\u00f3 mediante librer\u00edas de Python por medio de un proceso conocido como geoparsing. Proceso que permite agregar coordenadas geogr\u00e1ficas a nombres geogr\u00e1ficos de forma automatizada mediante diccionarios espaciales; sin embargo, en los casos en que no existi\u00f3 coincidencia autom\u00e1tica, las coordenadas fueron buscadas e incorporadas manualmente, utilizando la base de datos nacional, que contienen todas las localidades del pa\u00eds.</p><p>Como resultado de esta etapa, se obtuvo una primera base de datos consolidada a nivel localidad, que integra la asignaci\u00f3n de recursos del FAIS y su respectiva ubicaci\u00f3n geogr\u00e1fica.</p><h2>2. Construcci\u00f3n de base de datos complementaria a nivel municipal</h2><p>Derivado de observaciones realizadas durante la presentaci\u00f3n de avances del proyecto ante los compa\u00f1eros del equipo, se consider\u00f3 pertinente complementar el an\u00e1lisis con una segunda base de datos a nivel municipal. Para ello, se elabor\u00f3 un archivo Excel adicional en el que, por cada estado, se desagregaron los municipios y se incorporaron las siguientes variables:</p><p>Poblaci\u00f3n total (Censo de Poblaci\u00f3n y Vivienda 2020, INEGI).</p><p>Poblaci\u00f3n en situaci\u00f3n de pobreza (Censo de Poblaci\u00f3n y Vivienda 2020, INEGI).</p><p>Poblaci\u00f3n en situaci\u00f3n de pobreza extrema (Censo de Poblaci\u00f3n y Vivienda 2020, INEGI).</p><p>Grado de rezago social (CONEVAL, 2020).</p><p>Autoadscripci\u00f3n ind\u00edgena (Censo de Poblaci\u00f3n y Vivienda 2020, INEGI).</p><p>Porcentaje de poblaci\u00f3n con autoadscripci\u00f3n ind\u00edgena (Censo de Poblaci\u00f3n y Vivienda 2020, INEGI).</p><p>N\u00famero de localidades beneficiadas por el FAIS (calculado mediante suma manual).</p><p>Monto total asignado por municipio y n\u00famero total de localidades beneficiadas por municipio (calculado mediante suma manual).</p><p>Esta base permiti\u00f3 vincular la asignaci\u00f3n de recursos con indicadores sociodemogr\u00e1ficos relevantes para su an\u00e1lisis.</p><p>Monto total asignado por estado y n\u00famero total de localidades beneficiadas por estado (calculado mediante suma manual).</p><h2>3. Generaci\u00f3n de capas geogr\u00e1ficas en QGIS</h2><p>Para la representaci\u00f3n espacial de la informaci\u00f3n, se utiliz\u00f3 el software QGIS. Se generaron dos capas principales por cada entidad federativa:</p><p>En primer lugar, se descarg\u00f3 el Marco Geoestad\u00edstico Nacional (INEGI, 2020) en formato shapefile (SHP), correspondiente a los l\u00edmites municipales de cada estado, el cual fungi\u00f3 como base cartogr\u00e1fica.</p><p>Posteriormente, se incorpor\u00f3 la primera base de datos (a nivel localidad) y, mediante la herramienta \u201cCrear capa de puntos a partir de tabla\u201d, se gener\u00f3 una capa de puntos que representa la ubicaci\u00f3n geogr\u00e1fica de las localidades beneficiadas con recursos del FAIS.</p><p>En segundo lugar, para la base de datos municipal, se realiz\u00f3 una uni\u00f3n entre el shapefile de municipios y la tabla correspondiente, utilizando como campo com\u00fan el nombre del municipio. Este procedimiento permiti\u00f3 generar una capa poligonal que integra los l\u00edmites municipales con los indicadores sociodemogr\u00e1ficos y los montos asignados.</p><p>Finalmente, ambas capas fueron utilizadas como material principal para la construcci\u00f3n del geoportal, el cual integra la visualizaci\u00f3n interactiva de la distribuci\u00f3n territorial de los recursos del FAIS y sus variables asociadas.</p><p>Alcance General</p><p>Analizar y representar espacialmente la distribuci\u00f3n de los recursos del FAIS a nivel localidad y municipio, mediante la integraci\u00f3n de informaci\u00f3n estad\u00edstica y geoespacial en un entorno SIG.</p><p>Alcances Espec\u00edficos</p><p>\u2022 Sistematizaci\u00f3n y depuraci\u00f3n de informaci\u00f3n oficial del FAIS (2025).</p><p>\u2022 Conversi\u00f3n y estructuraci\u00f3n de bases de datos a partir de archivos PDF.</p><p>\u2022 Georreferenciaci\u00f3n de localidades beneficiadas mediante clave INEGI.</p><p>\u2022 Construcci\u00f3n de base municipal con indicadores sociodemogr\u00e1ficos.</p><p>\u2022 Integraci\u00f3n y an\u00e1lisis exploratorio de variables sociales y montos asignados.</p><p>\u2022 Generaci\u00f3n de capas geogr\u00e1ficas en QGIS (puntos y pol\u00edgonos).</p><p>\u2022 Desarrollo de un geoportal interactivo para consulta p\u00fablica.</p><p>\u2022 Dise\u00f1o de una metodolog\u00eda replicable para futuros an\u00e1lisis.</p><p>El proyecto no contempla:</p><p>\u2022 Evaluaci\u00f3n de impacto del FAIS.</p><p>\u2022 Trabajo de campo en localidades beneficiadas.</p><p>\u2022 An\u00e1lisis causal profundo.</p><p>\u00bfQu\u00e9 esperamos de los datos?</p><p>\u2022 Identificar patrones territoriales en la asignaci\u00f3n de recursos.</p><p>\u2022 Analizar la correspondencia entre montos asignados y niveles de pobreza o rezago social.</p><p>\u2022 Detectar posibles concentraciones o dispersi\u00f3n de apoyos a nivel municipal y local.</p><p>\u2022 Visualizar la relaci\u00f3n entre inversi\u00f3n p\u00fablica y presencia de poblaci\u00f3n ind\u00edgena.</p><p>\u2022 Generar evidencia cartogr\u00e1fica que facilite la comprensi\u00f3n de la distribuci\u00f3n del FAIS.</p><p>\u2022 Aportar insumos para futuras evaluaciones y toma de decisiones.</p>\n</body></html>";
+      const tpl = document.getElementById("tplMethod");
+      const html = tpl ? tpl.innerHTML : "<html><body><p>Sin metodología.</p></body></html>";
       const w = window.open("", "_blank");
       w.document.open();
       w.document.write(html);
       w.document.close();
     }
-
     document.getElementById("btnMethod").addEventListener("click", openMethod);
 
     /********************
      * Imprimir / Guardar como PDF
      ********************/
     document.getElementById("btnPrint").addEventListener("click", () => {
-      // Consejo: en el diálogo selecciona "Guardar como PDF"
       window.print();
     });
-
 
     /********************
      * Capas (dinámicas)
@@ -744,26 +728,20 @@
           },
           onEachFeature: (f, layer) => {
             const props = f.properties || {};
-
-            // ✅ Nombre del municipio desde NOMGEO (como lo pediste)
             const nom = props.NOMGEO || props.NOM_MUN || props.NOMBRE || props.MUNICIPIO || props.municipio || "Municipio";
-
-            // ✅ Mantiene lo que ya mostraba: rezago
             const nivel = rezagoNivel(props[REZAGO_FIELD]);
 
-            // ✅ Busca monto total y población total (según columnas disponibles en tu GeoJSON)
+            // ✅ monto total y población total (ajusta nombres si tus columnas son distintas)
             const montoTot = (() => {
               const keys = ["MONTO_TOTAL","MONTO_TOT","MONTOASIG","MONTO_ASIG","MONTO_ASIGNADO","TOTAL_MONTO","MONTO","TOTAL"];
               for (const k of keys) if (props[k] != null && props[k] !== "") return props[k];
               return null;
             })();
-
             const pobTot = (() => {
               const keys = ["POB_TOTAL","POBTOT","POB_TOT","POBTOTAL","POB2020","POB_2020","POBLACION_TOTAL","POBLACION"];
               for (const k of keys) if (props[k] != null && props[k] !== "") return props[k];
               return null;
             })();
-
             const fmtMoney = (x) => {
               const n = parseNum(x);
               return (n == null) ? (x ?? "") : new Intl.NumberFormat("es-MX",{style:"currency",currency:"MXN",maximumFractionDigits:0}).format(n);
@@ -796,14 +774,9 @@
           onEachFeature: (f, layer) => {
             const props = f.properties || {};
             const locName = props.NOMGEO || props.NOM_LOC || props.NOMBRE_LOC || props.LOCALIDAD || props.localidad || props.NOM || props.NOMBRE || "Localidad";
-
-            // ✅ Tooltip al pasar el cursor por la localidad
             layer.bindTooltip(`<b>${locName}</b>`, { sticky:true });
-
             layer.on("mouseover", () => layer.setStyle({ fillColor:"var(--acento2)" }));
             layer.on("mouseout", () => layer.setStyle(puntoStyle(props)));
-
-            // ✅ Mantener la ficha en pestaña nueva
             layer.on("click", () => openFicha(st.nombre, props));
           }
         }).addTo(map);
@@ -849,5 +822,4 @@
     loadMexico();
   </script>
 </body>
-
 </html>
