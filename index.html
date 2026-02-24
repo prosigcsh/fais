@@ -1,0 +1,871 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Geoportal FAIS</title>
+
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+
+  <style>
+    :root{
+      --morado-osc:#4a148c;
+      --morado:#6a1b9a;
+      --morado-med:#7b1fa2;
+      --morado-cla:#b39ddb;
+
+      --bg:#0b0b10;
+      --panel:#11121a;
+      --panel2:#161827;
+      --txt:#f4f5f7;
+      --txt2:#cfd3da;
+      --line:rgba(255,255,255,.10);
+
+      --acento:#ffb300;   /* puntos */
+      --acento2:#ff6d00;  /* hover */
+
+      /* Leyenda Rezago (3 niveles) */
+      --rez-alto:#4a148c;
+      --rez-medio:#7b1fa2;
+      --rez-bajo:#b39ddb;
+      --rez-sd:#d1c4e9;
+    }
+
+    html,body{
+      height:100%;
+      margin:0;
+      font-family:system-ui,Segoe UI,Arial,sans-serif;
+      background:var(--bg);
+      color:var(--txt);
+      overflow:hidden;
+    }
+
+    header{
+      padding:12px 14px;
+      background:linear-gradient(90deg, rgba(74,20,140,.95), rgba(106,27,154,.88));
+      border-bottom:1px solid rgba(255,255,255,.10);
+    }
+
+    /* ✅ título centrado */
+    header h1{
+      margin:0;
+      font-size:18px;
+      letter-spacing:.2px;
+      text-align:center;
+      line-height:1.25;
+    }
+
+    header .sub{
+      margin-top:6px;
+      font-size:12px;
+      color:var(--txt2);
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      gap:8px;
+      flex-wrap:wrap;
+      text-align:center;
+    }
+
+    /* ✅ link OPIRNA cuidado para no desbordar */
+    .opirna-link{
+      color:#fff;
+      text-decoration:underline;
+      text-underline-offset:2px;
+      max-width:100%;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+      display:inline-block;
+      vertical-align:bottom;
+    }
+    .opirna-link:hover{opacity:.92;}
+
+    #toolbar{
+      display:flex;
+      flex-wrap:wrap;
+      align-items:center;
+      justify-content:center;
+      gap:10px;
+      padding:10px 14px;
+      background:linear-gradient(180deg, rgba(22,24,39,.95), rgba(17,18,26,.92));
+      border-bottom:1px solid var(--line);
+    }
+
+    .btn{
+      border:1px solid rgba(255,255,255,.14);
+      background:rgba(255,255,255,.06);
+      color:var(--txt);
+      padding:8px 10px;
+      border-radius:12px;
+      cursor:pointer;
+      font-size:13px;
+      transition:.15s ease;
+      max-width:100%;
+      white-space:nowrap;
+    }
+    .btn:hover{background:rgba(255,255,255,.12);}
+    .btn:disabled{opacity:.45;cursor:not-allowed;}
+
+    .pill{
+      font-size:12px;
+      color:var(--txt2);
+      padding:7px 10px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(255,255,255,.05);
+      max-width:100%;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+    }
+
+    #map{height:calc(100% - 178px);} /* header + toolbar + footer */
+
+    footer{
+      padding:10px 14px;
+      font-size:12px;
+      color:var(--txt2);
+      background:rgba(10,10,16,.92);
+      border-top:1px solid var(--line);
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      text-align:center;
+    }
+
+    /* Spinner */
+    #loading{
+      position:absolute; inset:0;
+      display:none;
+      align-items:center; justify-content:center;
+      background:rgba(0,0,0,.35);
+      z-index:9999;
+      backdrop-filter: blur(2px);
+    }
+    .card{
+      width:min(520px,88vw);
+      background:rgba(17,18,26,.92);
+      border:1px solid rgba(255,255,255,.10);
+      border-radius:18px;
+      padding:16px 16px 14px;
+      box-shadow:0 12px 40px rgba(0,0,0,.35);
+    }
+    .card h3{margin:0 0 6px;font-size:15px;}
+    .card p{margin:0;color:var(--txt2);font-size:12px;line-height:1.35;}
+    .spinner{
+      margin-top:12px;
+      width:32px;height:32px;border-radius:50%;
+      border:3px solid rgba(255,255,255,.18);
+      border-top-color: var(--acento);
+      animation:spin 1s linear infinite;
+    }
+    @keyframes spin{to{transform:rotate(360deg)}}
+
+    /* Leaflet controls */
+    .leaflet-control-layers,
+    .leaflet-control-zoom{
+      border:1px solid rgba(255,255,255,.12)!important;
+      background:rgba(17,18,26,.88)!important;
+      color:var(--txt)!important;
+      border-radius:14px!important;
+      box-shadow:none!important;
+    }
+    .leaflet-control-layers label{color:var(--txt2)!important;}
+    .leaflet-control-zoom a{
+      background:transparent!important;color:var(--txt)!important;
+      border-bottom:1px solid rgba(255,255,255,.08)!important;
+    }
+    .leaflet-control-zoom a:last-child{border-bottom:none!important;}
+
+    .leaflet-tooltip{
+      background:rgba(17,18,26,.92);
+      color:var(--txt);
+      border:1px solid rgba(255,255,255,.10);
+      border-radius:12px;
+      padding:8px 10px;
+      box-shadow:none;
+      max-width:260px;
+    }
+
+    /* ✅ Leyenda microgeoportal dentro del mapa, sin desbordar */
+    .legend{
+      background:rgba(17,18,26,.88);
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:14px;
+      padding:10px 10px;
+      color:var(--txt);
+      max-width:260px;
+    }
+    .legend .ttl{
+      font-size:12px;
+      color:var(--txt2);
+      margin-bottom:8px;
+    }
+    .legend .row{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      font-size:12px;
+      color:var(--txt2);
+      margin:6px 0;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .dot-swatch{
+      width:12px;height:12px;border-radius:50%;
+      background:var(--acento);
+      border:1px solid rgba(0,0,0,.35);
+      flex:0 0 auto;
+    }
+
+    .swatch{
+      width:14px;height:14px;border-radius:4px;
+      border:1px solid rgba(0,0,0,.35);
+      flex:0 0 auto;
+    }
+  
+    /* ✅ Ajustes de impresión (usar "Guardar como PDF" del navegador) */
+    @media print{
+      html, body{ height:auto; overflow:visible; background:#fff; color:#000; }
+      header, #toolbar, footer, #loading{ display:none !important; }
+      #map{ height:100vh !important; }
+      .leaflet-control{ display:none !important; }
+    }
+
+  </style>
+</head>
+
+<body>
+  <header>
+    <h1 id="title">Geoportal del Fondo de Aportaciones para la Infraestructura Social (FAIS)</h1>
+
+    <div class="sub" id="subtitle">
+      <span>Mapa nacional – da clic en una entidad</span>
+      <span style="opacity:.6">•</span>
+      <a class="opirna-link" href="https://opirna.ciesas.edu.mx" target="_blank" rel="noopener">
+        Observatorio de Pueblos Indígenas, Recursos Naturales y Medio Ambiente del ProSIG-CSH, CIESAS
+      </a>
+    </div>
+  </header>
+
+  <div id="toolbar">
+    <button id="btnBack" class="btn" disabled>⬅ Regresar al mapa nacional</button>
+    <span class="pill" id="statePill">Vista: México</span>
+
+    <!-- ✅ botón de fuentes -->
+    <button id="btnSources" class="btn">📚 Fuentes y créditos</button>
+    <button id="btnMethod" class="btn">🧾 Metodología</button>
+    <button id="btnPrint" class="btn">🖨️ Imprimir / PDF</button>
+  </div>
+
+  <div id="map"></div>
+
+  <div id="loading">
+    <div class="card">
+      <h3>Cargando datos…</h3>
+      <p>Estoy preparando el microgeoportal de la entidad seleccionada.</p>
+      <div class="spinner"></div>
+    </div>
+  </div>
+
+  <footer>
+    Observatorio de Pueblos Indígenas, Recursos Naturales y Medio Ambiente del ProSIG-CSH, CIESAS.
+  </footer>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    /********************
+     * CONFIG (25 entidades)
+     * Slug = nombre de archivo (en data/ESTADOS/)
+     ********************/
+    const ESTADOS = [
+      { slug:"bajacalifornia", nombre:"Baja California", center:[30.5,-115.0], zoom:6 },
+      { slug:"campeche", nombre:"Campeche", center:[19.5,-90.5], zoom:7 },
+      { slug:"chiapas", nombre:"Chiapas", center:[16.7,-92.6], zoom:7 },
+      { slug:"chihuahua", nombre:"Chihuahua", center:[28.6,-106.1], zoom:6 },
+      { slug:"cdmx", nombre:"Ciudad de México", center:[19.43,-99.13], zoom:9 },
+      { slug:"colima", nombre:"Colima", center:[19.2,-103.8], zoom:8 },
+      { slug:"edomex", nombre:"Estado de México", center:[19.3,-99.7], zoom:7 },
+      { slug:"guanajuato", nombre:"Guanajuato", center:[21.0,-101.2], zoom:7 },
+      { slug:"guerrero", nombre:"Guerrero", center:[17.6,-99.9], zoom:7 },
+      { slug:"hidalgo", nombre:"Hidalgo", center:[20.5,-98.9], zoom:7 },
+      { slug:"jalisco", nombre:"Jalisco", center:[20.6,-103.7], zoom:7 },
+      { slug:"michoacan", nombre:"Michoacán", center:[19.1,-101.9], zoom:7 },
+      { slug:"morelos", nombre:"Morelos", center:[18.7,-99.0], zoom:8 },
+      { slug:"nayarit", nombre:"Nayarit", center:[21.8,-104.9], zoom:7 },
+      { slug:"oaxaca", nombre:"Oaxaca", center:[17.1,-96.7], zoom:7 },
+      { slug:"puebla", nombre:"Puebla", center:[19.0,-98.2], zoom:7 },
+      { slug:"queretaro", nombre:"Querétaro", center:[20.8,-99.8], zoom:8 },
+      { slug:"quintanaroo", nombre:"Quintana Roo", center:[19.5,-88.4], zoom:7 },   // ✅ corregido
+      { slug:"sanluispotosi", nombre:"San Luis Potosí", center:[22.3,-100.9], zoom:7 },
+      { slug:"sinaloa", nombre:"Sinaloa", center:[25.0,-107.5], zoom:7 },
+      { slug:"sonora", nombre:"Sonora", center:[29.3,-110.3], zoom:6 },
+      { slug:"tabasco", nombre:"Tabasco", center:[17.9,-92.6], zoom:8 },
+      { slug:"tlaxcala", nombre:"Tlaxcala", center:[19.4,-98.1], zoom:9 },
+      { slug:"yucatan", nombre:"Yucatán", center:[20.7,-88.9], zoom:7 },
+      { slug:"zacatecas", nombre:"Zacatecas", center:[23.3,-102.7], zoom:7 }
+    ];
+
+    // Carpeta donde están las 50 capas
+    const DATA_ESTADOS_DIR = "data/ESTADOS";
+
+    // ✅ Mapa definitivo por clave estatal (evita confusión EdoMex vs CDMX)
+    // Se toma CVE_EDO del mexico_entidades.geojson
+    const CVE_TO_SLUG = {
+      "02":"bajacalifornia",
+      "04":"campeche",
+      "07":"chiapas",
+      "08":"chihuahua",
+      "09":"cdmx",
+      "06":"colima",
+      "15":"edomex",
+      "11":"guanajuato",
+      "12":"guerrero",
+      "13":"hidalgo",
+      "14":"jalisco",
+      "16":"michoacan",
+      "17":"morelos",
+      "18":"nayarit",
+      "20":"oaxaca",
+      "21":"puebla",
+      "22":"queretaro",
+      "23":"quintanaroo",
+      "24":"sanluispotosi",
+      "25":"sinaloa",
+      "26":"sonora",
+      "27":"tabasco",
+      "29":"tlaxcala",
+      "31":"yucatan",
+      "32":"zacatecas"
+    };
+
+    /********************
+     * Helpers
+     ********************/
+    const $ = (id) => document.getElementById(id);
+    function showLoading(on){ $("loading").style.display = on ? "flex" : "none"; }
+
+    function norm(s){
+      return (s ?? "")
+        .toString()
+        .trim()
+        .toLowerCase()
+        .normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    }
+
+    // ✅ tu capa nacional trae NOMBRE_EDO
+    function getEntidadNombre(props){
+      if (!props) return null;
+      if (props.NOMBRE_EDO) return props.NOMBRE_EDO;
+      return null;
+    }
+
+    /********************
+     * Map + basemaps
+     ********************/
+    const map = L.map("map", { zoomControl:true }).setView([23.6,-102.5], 5);
+
+    const osm = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution:"© OpenStreetMap"
+    });
+
+    const sat = L.tileLayer(
+      "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+      { attribution:"Tiles © Esri" }
+    );
+
+    osm.addTo(map);
+
+    let layersControl = null;
+    function setLayerControl(overlays){
+      if (layersControl) map.removeControl(layersControl);
+      layersControl = L.control.layers(
+        { "OpenStreetMap": osm, "Satélite": sat },
+        overlays || {},
+        { collapsed:false }
+      ).addTo(map);
+    }
+
+    /********************
+     * Rezago (3 tipos) usando EXACTAMENTE: "GRADO DE REZAGO"
+     ********************/
+    const REZAGO_FIELD = "GRADO DE REZAGO";
+
+    function rezagoNivel(raw){
+      const s = norm(raw);
+      if (!s) return "Sin dato";
+      if (s.includes("alto") || s.includes("mayor")) return "Alto";
+      if (s.includes("medio")) return "Medio";
+      if (s.includes("bajo") || s.includes("menor")) return "Bajo";
+      if (s === "a") return "Alto";
+      if (s === "m") return "Medio";
+      if (s === "b") return "Bajo";
+      return "Sin dato";
+    }
+
+    function colorRezago3(nivel){
+      if (nivel === "Alto") return getComputedStyle(document.documentElement).getPropertyValue('--rez-alto').trim() || "#4a148c";
+      if (nivel === "Medio") return getComputedStyle(document.documentElement).getPropertyValue('--rez-medio').trim() || "#7b1fa2";
+      if (nivel === "Bajo") return getComputedStyle(document.documentElement).getPropertyValue('--rez-bajo').trim() || "#b39ddb";
+      return getComputedStyle(document.documentElement).getPropertyValue('--rez-sd').trim() || "#d1c4e9";
+    }
+
+    /********************
+     * Puntos (simbología mejorada + tamaño por monto si existe)
+     ********************/
+    function getMonto(props){
+      const candidates = [
+        "MONTO","monto","MONTO_TOTAL","monto_total","MONTO_FAIS","MONTO FAIS",
+        "IMPORTE","importe","ASIGNACION","asignacion","TOTAL","total"
+      ];
+      for (const k of candidates) if (props && props[k] != null && props[k] !== "") return props[k];
+      return null;
+    }
+
+    function parseNum(x){
+      if (x == null) return null;
+      const s = x.toString().replace(/[^0-9.\-]/g,"");
+      const n = Number(s);
+      return Number.isFinite(n) ? n : null;
+    }
+
+    
+    function getPropByCandidates(props, candidates){
+      for (const k of candidates){
+        if (props && props[k] != null && props[k] !== "") return props[k];
+      }
+      return null;
+    }
+
+    function formatMoneyMXN(x){
+      const n = parseNum(x);
+      if (n == null) return null;
+      try{
+        return new Intl.NumberFormat('es-MX',{style:'currency',currency:'MXN',maximumFractionDigits:0}).format(n);
+      }catch(e){
+        return "$" + n.toFixed(0);
+      }
+    }
+
+    function formatIntMX(x){
+      const n = parseNum(x);
+      if (n == null) return null;
+      try{
+        return new Intl.NumberFormat('es-MX',{maximumFractionDigits:0}).format(n);
+      }catch(e){
+        return String(Math.round(n));
+      }
+    }
+
+    function getMunicipioNombre(props){
+      // Preferencia: NOMGEO (INEGI)
+      return props?.NOMGEO || props?.NOM_MUN || props?.NOMBRE || props?.MUNICIPIO || props?.municipio || "Municipio";
+    }
+
+    function getLocalidadNombre(props){
+      const candidates = ["NOMGEO","NOM_LOC","NOMBRE_LOC","NOMBRE","LOCALIDAD","NOM_LOCALID","NOMLOCAL","nom_loc","localidad"];
+      return getPropByCandidates(props, candidates) || "Localidad";
+    }
+
+    function getMontoMunicipal(props){
+      const candidates = ["MONTO_TOTAL","MONTO_TOT","MONTO_MUN","MONTO_ASIG","MONTO_ASIGNADO","MONTO","TOTAL","TOTAL_MUN","monto_total","monto"];
+      return getPropByCandidates(props, candidates);
+    }
+
+    function getPoblTotalMunicipal(props){
+      const candidates = ["POB_TOTAL","POBTOT","POB_TOT","POBTOTAL","POBLACION_TOTAL","POBLACION","P_TOTAL","pob_total"];
+      return getPropByCandidates(props, candidates);
+    }
+
+
+    function puntoStyle(props){
+      const monto = parseNum(getMonto(props));
+      const r = monto == null ? 7 : Math.max(6, Math.min(14, 6 + Math.sqrt(monto)/120));
+      return {
+        radius: r,
+        fillColor: getComputedStyle(document.documentElement).getPropertyValue('--acento').trim() || "#ffb300",
+        color: "rgba(0,0,0,.55)",
+        weight: 1.2,
+        fillOpacity: 0.95
+      };
+    }
+
+    function pointToLayer(feature, latlng){
+      return L.circleMarker(latlng, puntoStyle(feature.properties || {}));
+    }
+
+    /********************
+     * Leyenda de rezago (solo visible en microgeoportal)
+     ********************/
+    let legendControl = null;
+
+    function addLegend(){
+      removeLegend();
+
+      legendControl = L.control({ position: "bottomright" });
+      legendControl.onAdd = function(){
+        const div = L.DomUtil.create("div", "legend");
+        div.innerHTML = `
+          <div class="ttl"><b>${REZAGO_FIELD}</b> (3 niveles)</div>
+          <div class="row"><span class="swatch" style="background:var(--rez-alto)"></span> Alto</div>
+          <div class="row"><span class="swatch" style="background:var(--rez-medio)"></span> Medio</div>
+          <div class="row"><span class="swatch" style="background:var(--rez-bajo)"></span> Bajo</div>
+          <div class="row"><span class="swatch" style="background:var(--rez-sd)"></span> Sin dato</div>
+          <div style="height:1px;background:rgba(255,255,255,.10);margin:10px 0"></div>
+          <div class="ttl">Localidades</div>
+          <div class="row"><span class="dot-swatch"></span> Localidades beneficiadas por el FAIS</div>
+        `;
+        return div;
+      };
+      legendControl.addTo(map);
+    }
+
+    function removeLegend(){
+      if (legendControl){
+        map.removeControl(legendControl);
+        legendControl = null;
+      }
+    }
+
+    /********************
+     * Ficha vertical en pestaña nueva
+     ********************/
+    function openFicha(estadoNombre, props, locNombre){
+      const keys = Object.keys(props || {});
+      const rows = keys.map(k => {
+        const v = props[k];
+        return `
+          <div style="padding:10px 0;border-bottom:1px solid #eee">
+            <div style="font-size:12px;color:#6b6b6b">${k}</div>
+            <div style="font-size:15px"><b>${(v ?? "").toString()}</b></div>
+          </div>`;
+      }).join("");
+
+      const html = `
+      <html><head><meta charset="utf-8">
+      <title>Ficha – ${estadoNombre}</title>
+      </head>
+      <body style="font-family:system-ui,Segoe UI,Arial;margin:18px;max-width:980px">
+        <div style="border-radius:18px;padding:18px;border:1px solid #e6e6e6">
+          <div style="font-size:12px;color:#666;margin-bottom:6px">
+            Observatorio de Pueblos Indígenas, Recursos Naturales y Medio Ambiente – ProSIG-CSH, CIESAS
+          </div>
+          <h2 style="margin:0 0 4px 0;color:#4a148c">
+            Mapa interactivo del Fondo de Aportaciones para la Infraestructura Social (FAIS)
+          </h2>
+          <h1 style="margin:0 0 6px 0;font-size:20px;color:#111">${(locNombre||"Localidad")}</h1>
+          <div style="color:#555;margin-bottom:14px">${estadoNombre} – Ficha de localidad / monto</div>
+          <div style="border:1px solid #f0f0f0;border-radius:14px;padding:14px">
+            ${rows || "<i>Sin metadatos.</i>"}
+          </div>
+        </div>
+      </body></html>`;
+
+      const w = window.open("", "_blank");
+      w.document.open();
+      w.document.write(html);
+      w.document.close();
+    }
+
+    /********************
+     * Ventana: Fuentes y créditos
+     ********************/
+    function openSources(){
+      const html = `
+      <html><head><meta charset="utf-8">
+      <title>Fuentes y créditos – Geoportal FAIS</title>
+      </head>
+      <body style="font-family:system-ui,Segoe UI,Arial;margin:18px;max-width:980px;line-height:1.45">
+        <h2 style="margin:0 0 10px 0;color:#4a148c">Fuentes del proyecto</h2>
+        <div style="border:1px solid #e6e6e6;border-radius:14px;padding:14px">
+          <p style="margin:0 0 10px 0">
+            Lorem, I. P., &amp; Ipsum, D. A. (2018). <i>Lorem ipsum dolor sit amet: Consectetur adipiscing elit en estudios territoriales</i>.
+            <i>Revista Ficticia de Ciencias Sociales</i>, 12(3), 45–67.
+            <a href="https://doi.org/10.1234/lorem.2018.003" target="_blank" rel="noopener">https://doi.org/10.1234/lorem.2018.003</a>
+          </p>
+          <p style="margin:0">
+            Dolor, S. A. (2021). <i>Sit amet, consectetur adipiscing elit: Perspectivas teóricas desde el lorem ipsum</i>. Editorial Ejemplo Académico.
+          </p>
+        </div>
+
+        <h2 style="margin:18px 0 10px 0;color:#4a148c">Créditos de elaboración</h2>
+        <div style="border:1px solid #e6e6e6;border-radius:14px;padding:14px">
+          <p style="margin:0 0 8px 0"><b>Curaduría y sistematización de datos:</b> Vanesa Jaimes López</p>
+          <p style="margin:0"><b>Revisión:</b> Antonio Escobar Ohmstede, José Antonio Bernal Hernández</p>
+        </div>
+
+        <div style="margin-top:16px;font-size:12px;color:#666">
+          Observatorio de Pueblos Indígenas, Recursos Naturales y Medio Ambiente – ProSIG-CSH, CIESAS
+        </div>
+      </body></html>
+      `;
+      const w = window.open("", "_blank");
+      w.document.open();
+      w.document.write(html);
+      w.document.close();
+    }
+
+    document.getElementById("btnSources").addEventListener("click", openSources);
+
+
+    /********************
+     * Ventana: Metodología
+     ********************/
+    const METHODOLOGY_HTML = `<h2 style='margin:0 0 10px 0;color:#4a148c'>Metodología</h2>
+<p style='margin:0 0 10px 0'>El geoportal del Fondo de Aportaciones para la Infraestructura Social (FAIS) se desarrolló a partir de un proceso sistemático de recopilación, depuración, integración y análisis de información estadística y geoespacial. La metodología se estructuró en tres etapas principales: obtención y procesamiento de datos, construcción de bases de datos complementarias y generación de capas geográficas para su integración en un entorno de Sistema de Información Geográfica en línea.</p>
+<h3 style='margin:16px 0 8px 0;color:#4a148c'>1. Recopilación y procesamiento de información</h3>
+<p style='margin:0 0 10px 0'>A inicios del año 2025 se publicaron los resultados correspondientes a la asignación de recursos del FAIS por localidad en una plataforma oficial del gobierno federal , en formato PDF descargable. Se procedió a la descarga de la totalidad de los archivos disponibles; no obstante, algunos estados no contaban con información publicada debido a periodos electorales en curso (Durango y Veracruz) y algunos otros tenían información de otro estado (Coahuila contenía la información de la Ciudad de México) y en algunos otros solo no tenían disponibles datos para descargar (Aguascalientes, Baja California Sur, Nuevo León y Tamaulipas).</p>
+<p style='margin:0 0 10px 0'>Dado que los archivos en PDF contenían información tabular en un formato estático y no editable, se realizó una conversión de éstos a formato Excel (xls.) mediante librerías de Python. Este tipo de herramientas permiten automatizar las tareas que llevarían mucho tiempo desarrollar manualmente, asimismo facilitan el manejo y análisis de los datos. Un inconveniente identificado durante este proceso fue que aquellos archivos PDF que contenían más de una página generaron múltiples hojas dentro del archivo Excel correspondiente, por lo que fue necesario integrar manualmente las hojas en una sola base consolidada por entidad federativa, lo cual implico una inversión de tiempo considerable. Por esta razón es importante destacar que, en cualquier proceso automatizado, la curación y el ojo crítico de quien trabaja con los datos es imprescindible para asegurar que la información sea confiable.</p>
+<p style='margin:0 0 10px 0'>Posteriormente, se llevó a cabo la separación manual de la columna que contenía conjuntamente el nombre de la localidad y la clave geoestadística del Instituto Nacional de Estadística y Geografía (INEGI), con el propósito de disponer de esta última como identificador único. La clave INEGI permitió realizar un cruce de información para incorporar las coordenadas geográficas de cada localidad. El procedimiento se efectuó mediante librerías de Python por medio de un proceso conocido como geoparsing. Proceso que permite agregar coordenadas geográficas a nombres geográficos de forma automatizada mediante diccionarios espaciales; sin embargo, en los casos en que no existió coincidencia automática, las coordenadas fueron buscadas e incorporadas manualmente, utilizando la base de datos nacional, que contienen todas las localidades del país.</p>
+<p style='margin:0 0 10px 0'>Como resultado de esta etapa, se obtuvo una primera base de datos consolidada a nivel localidad, que integra la asignación de recursos del FAIS y su respectiva ubicación geográfica.</p>
+<h3 style='margin:16px 0 8px 0;color:#4a148c'>2. Construcción de base de datos complementaria a nivel municipal</h3>
+<p style='margin:0 0 10px 0'>Derivado de observaciones realizadas durante la presentación de avances del proyecto ante los compañeros del equipo, se consideró pertinente complementar el análisis con una segunda base de datos a nivel municipal. Para ello, se elaboró un archivo Excel adicional en el que, por cada estado, se desagregaron los municipios y se incorporaron las siguientes variables:</p>
+<p style='margin:0 0 10px 0'>Población total (Censo de Población y Vivienda 2020, INEGI).</p>
+<p style='margin:0 0 10px 0'>Población en situación de pobreza (Censo de Población y Vivienda 2020, INEGI).</p>
+<p style='margin:0 0 10px 0'>Población en situación de pobreza extrema (Censo de Población y Vivienda 2020, INEGI).</p>
+<p style='margin:0 0 10px 0'>Grado de rezago social (CONEVAL, 2020).</p>
+<p style='margin:0 0 10px 0'>Autoadscripción indígena (Censo de Población y Vivienda 2020, INEGI).</p>
+<p style='margin:0 0 10px 0'>Porcentaje de población con autoadscripción indígena (Censo de Población y Vivienda 2020, INEGI).</p>
+<p style='margin:0 0 10px 0'>Número de localidades beneficiadas por el FAIS (calculado mediante suma manual).</p>
+<p style='margin:0 0 10px 0'>Monto total asignado por municipio y número total de localidades beneficiadas por municipio (calculado mediante suma manual).</p>
+<p style='margin:0 0 10px 0'>Esta base permitió vincular la asignación de recursos con indicadores sociodemográficos relevantes para su análisis.</p>
+<p style='margin:0 0 10px 0'>Monto total asignado por estado y número total de localidades beneficiadas por estado (calculado mediante suma manual).</p>
+<h3 style='margin:16px 0 8px 0;color:#4a148c'>3. Generación de capas geográficas en QGIS</h3>
+<p style='margin:0 0 10px 0'>Para la representación espacial de la información, se utilizó el software QGIS. Se generaron dos capas principales por cada entidad federativa:</p>
+<p style='margin:0 0 10px 0'>En primer lugar, se descargó el Marco Geoestadístico Nacional (INEGI, 2020) en formato shapefile (SHP), correspondiente a los límites municipales de cada estado, el cual fungió como base cartográfica.</p>
+<p style='margin:0 0 10px 0'>Posteriormente, se incorporó la primera base de datos (a nivel localidad) y, mediante la herramienta “Crear capa de puntos a partir de tabla”, se generó una capa de puntos que representa la ubicación geográfica de las localidades beneficiadas con recursos del FAIS.</p>
+<p style='margin:0 0 10px 0'>En segundo lugar, para la base de datos municipal, se realizó una unión entre el shapefile de municipios y la tabla correspondiente, utilizando como campo común el nombre del municipio. Este procedimiento permitió generar una capa poligonal que integra los límites municipales con los indicadores sociodemográficos y los montos asignados.</p>
+<p style='margin:0 0 10px 0'>Finalmente, ambas capas fueron utilizadas como material principal para la construcción del geoportal, el cual integra la visualización interactiva de la distribución territorial de los recursos del FAIS y sus variables asociadas.</p>
+<p style='margin:0 0 10px 0'>Alcance General</p>
+<p style='margin:0 0 10px 0'>Analizar y representar espacialmente la distribución de los recursos del FAIS a nivel localidad y municipio, mediante la integración de información estadística y geoespacial en un entorno SIG.</p>
+<p style='margin:0 0 10px 0'>Alcances Específicos</p>
+<ul style='margin:8px 0 8px 18px;padding:0'>
+<li>Sistematización y depuración de información oficial del FAIS (2025).</li>
+<li>Conversión y estructuración de bases de datos a partir de archivos PDF.</li>
+<li>Georreferenciación de localidades beneficiadas mediante clave INEGI.</li>
+<li>Construcción de base municipal con indicadores sociodemográficos.</li>
+<li>Integración y análisis exploratorio de variables sociales y montos asignados.</li>
+<li>Generación de capas geográficas en QGIS (puntos y polígonos).</li>
+<li>Desarrollo de un geoportal interactivo para consulta pública.</li>
+<li>Diseño de una metodología replicable para futuros análisis.</li>
+</ul>
+<p style='margin:0 0 10px 0'>El proyecto no contempla:</p>
+<ul style='margin:8px 0 8px 18px;padding:0'>
+<li>Evaluación de impacto del FAIS.</li>
+<li>Trabajo de campo en localidades beneficiadas.</li>
+<li>Análisis causal profundo.</li>
+</ul>
+<p style='margin:0 0 10px 0'>¿Qué esperamos de los datos?</p>
+<ul style='margin:8px 0 8px 18px;padding:0'>
+<li>Identificar patrones territoriales en la asignación de recursos.</li>
+<li>Analizar la correspondencia entre montos asignados y niveles de pobreza o rezago social.</li>
+<li>Detectar posibles concentraciones o dispersión de apoyos a nivel municipal y local.</li>
+<li>Visualizar la relación entre inversión pública y presencia de población indígena.</li>
+<li>Generar evidencia cartográfica que facilite la comprensión de la distribución del FAIS.</li>
+<li>Aportar insumos para futuras evaluaciones y toma de decisiones.</li>
+</ul>`;
+
+    function openMethodology(){
+      const html = `
+      <html><head><meta charset="utf-8">
+      <title>Metodología – Geoportal FAIS</title>
+      </head>
+      <body style="font-family:system-ui,Segoe UI,Arial;margin:18px;max-width:980px;line-height:1.5">
+        ${METHODOLOGY_HTML}
+        <div style="margin-top:16px;font-size:12px;color:#666">
+          Observatorio de Pueblos Indígenas, Recursos Naturales y Medio Ambiente – ProSIG-CSH, CIESAS
+        </div>
+      </body></html>
+      `;
+      const w = window.open("", "_blank");
+      w.document.open();
+      w.document.write(html);
+      w.document.close();
+    }
+
+    document.getElementById("btnMethod").addEventListener("click", openMethodology);
+
+    /********************
+     * Imprimir / PDF
+     * (abre el diálogo del navegador; elegir "Guardar como PDF")
+     ********************/
+    function printMapToPDF(){
+      window.print();
+    }
+    document.getElementById("btnPrint").addEventListener("click", printMapToPDF);
+
+
+    /********************
+     * Capas (dinámicas)
+     ********************/
+    let capaMexico = null;
+    let capaMun = null;
+    let capaLoc = null;
+
+    function clearMicro(){
+      removeLegend();
+      if (capaMun){ map.removeLayer(capaMun); capaMun = null; }
+      if (capaLoc){ map.removeLayer(capaLoc); capaLoc = null; }
+      setLayerControl({});
+    }
+
+    /********************
+     * Vista nacional
+     ********************/
+    async function loadMexico(){
+      document.getElementById("subtitle").firstElementChild.textContent = "Mapa nacional – da clic en una entidad";
+      document.getElementById("statePill").textContent = "Vista: México";
+      document.getElementById("btnBack").disabled = true;
+
+      clearMicro();
+      showLoading(true);
+
+      try{
+        const res = await fetch("data/mexico_entidades.geojson");
+        if (!res.ok) throw new Error("No se pudo cargar data/mexico_entidades.geojson");
+        const data = await res.json();
+
+        if (capaMexico) map.removeLayer(capaMexico);
+
+        capaMexico = L.geoJSON(data, {
+          style: {
+            color:"#7b1fa2",
+            weight: 1,
+            fillColor:"#6a1b9a",
+            fillOpacity: 0.22
+          },
+          onEachFeature: (f, layer) => {
+            const props = f.properties || {};
+            const nom = getEntidadNombre(props) || "Entidad";
+            const cve = String(props.CVE_EDO ?? "").padStart(2,"0");
+
+            layer.bindTooltip(
+              `<b>${nom}</b><br><span style="color:#cfd3da">Clic para abrir</span>`,
+              { sticky:true }
+            );
+
+            // ✅ click por CVE_EDO (sin confusiones)
+            layer.on("click", () => {
+              const slug = CVE_TO_SLUG[cve];
+              if (slug) enterState(slug);
+              else alert("No hay slug configurado para CVE_EDO=" + cve + " (" + nom + ")");
+            });
+          }
+        }).addTo(map);
+
+        map.setView([23.6,-102.5], 5);
+        setLayerControl({});
+      }catch(err){
+        alert("Error en vista nacional: " + err.message);
+      }finally{
+        showLoading(false);
+      }
+    }
+
+    /********************
+     * Microgeoportal por entidad (carga dinámica)
+     ********************/
+    async function enterState(slug){
+      const st = ESTADOS.find(e => e.slug === slug);
+      if (!st) return alert("Slug no encontrado en ESTADOS: " + slug);
+
+      // Actualiza pills
+      document.getElementById("subtitle").firstElementChild.textContent = st.nombre + " – Microgeoportal";
+      document.getElementById("statePill").textContent = "Vista: " + st.nombre;
+      document.getElementById("btnBack").disabled = false;
+
+      if (capaMexico) map.removeLayer(capaMexico);
+      clearMicro();
+      showLoading(true);
+
+      try{
+        // Municipios
+        const munRes = await fetch(`${DATA_ESTADOS_DIR}/${slug}_mun.geojson`);
+        if (!munRes.ok) throw new Error(`No se pudo cargar ${DATA_ESTADOS_DIR}/${slug}_mun.geojson`);
+        const mun = await munRes.json();
+
+        capaMun = L.geoJSON(mun, {
+          style: f => {
+            const nivel = rezagoNivel((f.properties || {})[REZAGO_FIELD]);
+            return {
+              color: "rgba(74,20,140,.65)",
+              weight: 0.7,
+              fillColor: colorRezago3(nivel),
+              fillOpacity: 0.55
+            };
+          },
+          onEachFeature: (f, layer) => {
+            const props = f.properties || {};
+            const nom = getMunicipioNombre(props);
+            const nivel = rezagoNivel(props[REZAGO_FIELD]);
+            layer.bindTooltip(
+              `<b>${nom}</b>`+`<br><span style="color:#cfd3da">${REZAGO_FIELD}: </span>${nivel}`+(() => {  const mt = formatMoneyMXN(getMontoMunicipal(props));  const pt = formatIntMX(getPoblTotalMunicipal(props));  const lines = [];  if (mt) lines.push(`<br><span style=\"color:#cfd3da\">Monto total asignado: </span>${mt}`);  if (pt) lines.push(`<br><span style=\"color:#cfd3da\">Población total: </span>${pt}`);  return lines.join('');})()`,
+              { sticky:true }
+            );
+          }
+        }).addTo(map);
+
+        // Localidades con monto
+        const locRes = await fetch(`${DATA_ESTADOS_DIR}/${slug}_loc_monto.geojson`);
+        if (!locRes.ok) throw new Error(`No se pudo cargar ${DATA_ESTADOS_DIR}/${slug}_loc_monto.geojson`);
+        const loc = await locRes.json();
+
+        capaLoc = L.geoJSON(loc, {
+          pointToLayer,
+          onEachFeature: (f, layer) => {
+            const props = f.properties || {};
+            const locNom = getLocalidadNombre(props);
+
+            // Tooltip al pasar el cursor (sin cambiar la acción de click)
+            layer.bindTooltip(`<b>${locNom}</b>`, { sticky:true });
+
+            layer.on("mouseover", () => layer.setStyle({ fillColor:"var(--acento2)" }));
+            layer.on("mouseout", () => layer.setStyle(puntoStyle(props)));
+            layer.on("click", () => openFicha(st.nombre, props, locNom));
+          }
+        }).addTo(map);
+
+        // Controles
+        setLayerControl({
+          "Municipios (GRADO DE REZAGO)": capaMun,
+          "Localidades (Monto)": capaLoc
+        });
+
+        // ✅ Leyenda visible en microgeoportal
+        addLegend();
+
+        // Encuadre
+        if (st.center && st.zoom){
+          map.setView(st.center, st.zoom);
+        }else{
+          map.fitBounds(capaMun.getBounds(), { padding:[20,20] });
+        }
+
+      }catch(err){
+        alert("Error en microgeoportal: " + err.message);
+      }finally{
+        showLoading(false);
+      }
+    }
+
+    /********************
+     * Botón regresar
+     ********************/
+    document.getElementById("btnBack").addEventListener("click", () => {
+      if (capaMun) map.removeLayer(capaMun);
+      if (capaLoc) map.removeLayer(capaLoc);
+      capaMun = capaLoc = null;
+
+      removeLegend();
+
+      if (capaMexico) capaMexico.addTo(map);
+      loadMexico();
+    });
+
+    // INIT
+    loadMexico();
+  </script>
+</body>
+</html>
