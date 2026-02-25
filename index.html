@@ -704,9 +704,34 @@
             const props = f.properties || {};
             const nom = props.NOM_MUN || props.NOMBRE || props.MUNICIPIO || props.municipio || "Municipio";
             const nivel = rezagoNivel(props[REZAGO_FIELD]);
-            layer.bindTooltip(
-              `<b>${nom}</b><br><span style="color:#cfd3da">${REZAGO_FIELD}: </span>${nivel}`,
-              { sticky:true }
+            // Tooltip con campos solicitados
+const nomgeo = props["NOMGEO"] || nom;
+
+const totalRaw = props["TOTAL DE RECURSOS ASIGNADOS DEL FAIS 2025"];
+const totalNum = parseNum(totalRaw);
+const totalFmt = (totalNum == null)
+  ? (totalRaw ?? "Sin datos")
+  : new Intl.NumberFormat("es-MX", { maximumFractionDigits:0 }).format(totalNum);
+
+const pdfStr = String(props["PDF"] ?? "").trim();
+const pdfHtml = (/^https?:\/\//i.test(pdfStr))
+  ? `<a href="${encodeURI(pdfStr)}" target="_blank" rel="noopener">Abrir PDF</a>`
+  : (pdfStr || "Sin datos");
+
+layer.bindTooltip(
+  `<div style="min-width:260px">
+     <b>${nom}</b><br>
+     <div style="margin-top:4px;color:#cfd3da"><b>NOMGEO:</b> ${nomgeo}</div>
+     <div style="margin-top:2px;color:#cfd3da"><b>Total FAIS 2025:</b> ${totalFmt}</div>
+     <div style="margin-top:2px;color:#cfd3da"><b>PDF:</b> ${pdfHtml}</div>
+     <div style="margin-top:6px;color:#cfd3da;opacity:.85">Clic para abrir</div>
+   </div>`,
+  { sticky:true, direction:"top", opacity:0.95 }
+);
+
+// ✅ Forzar que aparezca en hover como en tu imagen
+layer.on("mouseover", () => layer.openTooltip());
+layer.on("mouseout", () => layer.closeTooltip());
             );
           }
         }).addTo(map);
