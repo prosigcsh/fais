@@ -1,4 +1,4 @@
-<!doctype html>
+<!doctype html> 
 <html lang="es">
 <head>
   <meta charset="utf-8" />
@@ -21,9 +21,10 @@
       --txt2:#cfd3da;
       --line:rgba(255,255,255,.10);
 
-      --acento:#ffb300;
-      --acento2:#ff6d00;
+      --acento:#ffb300;   /* puntos */
+      --acento2:#ff6d00;  /* hover */
 
+      /* Leyenda Rezago (3 niveles) */
       --rez-alto:#4a148c;
       --rez-medio:#7b1fa2;
       --rez-bajo:#b39ddb;
@@ -47,7 +48,7 @@
 
     header{
       padding:12px 14px;
-      background:linear-gradient(90deg, rgba(74,20,140,.95), rgba(106,27,154,.88);
+      background:linear-gradient(90deg, rgba(74,20,140,.95), rgba(106,27,154,.88));
       border-bottom:1px solid rgba(255,255,255,.10);
     }
 
@@ -69,14 +70,16 @@
       background:rgba(255,255,255,.06);
       transition:.15s ease;
     }
-    .brandbar a:hover{ background:rgba(255,255,255,.12); }
+    .brandbar a:hover{
+      background:rgba(255,255,255,.12);
+    }
     .brandbar img{
       display:block;
       height:44px;
       max-width:160px;
       width:auto;
       object-fit:contain;
-      filter: drop-shadow(0 2px 10px rgba(0,0,0,.25);
+      filter: drop-shadow(0 2px 10px rgba(0,0,0,.25));
     }
     .brandbar img.logo-ciesas{ height:52px; max-width:180px; }
 
@@ -120,7 +123,7 @@
       justify-content:center;
       gap:10px;
       padding:10px 14px;
-      background:linear-gradient(180deg, rgba(22,24,39,.95), rgba(17,18,26,.92);
+      background:linear-gradient(180deg, rgba(22,24,39,.95), rgba(17,18,26,.92));
       border-bottom:1px solid var(--line);
     }
 
@@ -209,13 +212,13 @@
     .leaflet-control-zoom a:last-child{border-bottom:none!important;}
 
     .leaflet-tooltip{
-      background:rgba(17,18,26,.94);
+      background:rgba(17,18,26,.92);
       color:var(--txt);
       border:1px solid rgba(255,255,255,.10);
       border-radius:12px;
       padding:8px 10px;
       box-shadow:none;
-      max-width:340px;
+      max-width:320px;
     }
 
     .legend{
@@ -256,9 +259,11 @@
       <a href="https://ciesas.edu.mx/" target="_blank" rel="noopener" title="CIESAS">
         <img class="logo-ciesas" src="assets/logos/logo-ciesas.svg" alt="CIESAS">
       </a>
+
       <a href="https://prosigcsh.ciesas.edu.mx/" target="_blank" rel="noopener" title="ProSIG-CSH">
         <img src="assets/logos/logo-prosig.svg" alt="ProSIG-CSH">
       </a>
+
       <a href="https://opirna.ciesas.edu.mx" target="_blank" rel="noopener" title="OPIRNA">
         <img src="assets/logos/logo-opirna.svg" alt="OPIRNA">
       </a>
@@ -330,7 +335,6 @@
 
     const DATA_ESTADOS_DIR = "data/ESTADOS";
 
-    // CVE_EDO (del geojson nacional) -> slug
     const CVE_TO_SLUG = {
       "02":"bajacalifornia",
       "04":"campeche",
@@ -373,38 +377,17 @@
         .normalize("NFD").replace(/[\u0300-\u036f]/g, "");
     }
 
+    function getEntidadNombre(props){
+      if (!props) return null;
+      if (props.NOMBRE_EDO) return props.NOMBRE_EDO;
+      return null;
+    }
+
     function parseNum(x){
       if (x == null) return null;
       const s = x.toString().replace(/[^0-9.\-]/g,"");
       const n = Number(s);
       return Number.isFinite(n) ? n : null;
-    }
-
-    function getEntidadNombre(props){
-      if (!props) return null;
-      return props.NOMBRE_EDO || props.NOMGEO || null;
-    }
-
-    function safeHtml(s){
-      return String(s ?? "")
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;");
-    }
-
-    function formatMxInt(x){
-      const n = parseNum(x);
-      if (n == null) return (x ?? "Sin datos").toString();
-      return new Intl.NumberFormat("es-MX", { maximumFractionDigits:0 }).format(n);
-    }
-
-    function pdfToHtml(v){
-      const s = String(v ?? "").trim();
-      if (!s || norm(s) === "sin datos") return "Sin datos";
-      if (/^https?:\/\//i.test(s)) {
-        return `<a href="${encodeURI(s)}" target="_blank" rel="noopener">Abrir PDF</a>`;
-      }
-      return safeHtml(s);
     }
 
     /********************
@@ -434,7 +417,7 @@
     }
 
     /********************
-     * Rezago
+     * Rezago (3 niveles)
      ********************/
     const REZAGO_FIELD = "GRADO DE REZAGO";
 
@@ -458,22 +441,20 @@
     }
 
     /********************
-     * Puntos (localidades)
+     * Puntos
      ********************/
     function getMonto(props){
       const candidates = [
         "MONTO","monto","MONTO_TOTAL","monto_total","MONTO_FAIS","MONTO FAIS",
         "IMPORTE","importe","ASIGNACION","asignacion","TOTAL","total"
       ];
-      for (const k of candidates){
-        if (props && props[k] != null && props[k] !== "") return props[k];
-      }
+      for (const k of candidates) if (props && props[k] != null && props[k] !== "") return props[k];
       return null;
     }
 
     function puntoStyle(props){
-      const monto = parseNum(getMonto(props);
-      const r = monto == null ? 7 : Math.max(6, Math.min(14, 6 + Math.sqrt(monto)/120);
+      const monto = parseNum(getMonto(props));
+      const r = monto == null ? 7 : Math.max(6, Math.min(14, 6 + Math.sqrt(monto)/120));
       return {
         radius: r,
         fillColor: getComputedStyle(document.documentElement).getPropertyValue('--acento').trim() || "#ffb300",
@@ -484,7 +465,7 @@
     }
 
     function pointToLayer(feature, latlng){
-      return L.circleMarker(latlng, puntoStyle(feature.properties || {});
+      return L.circleMarker(latlng, puntoStyle(feature.properties || {}));
     }
 
     /********************
@@ -517,7 +498,7 @@
     }
 
     /********************
-     * Ficha (pestaña nueva)
+     * Ficha
      ********************/
     function openFicha(estadoNombre, props){
       const keys = Object.keys(props || {});
@@ -525,14 +506,14 @@
         const v = props[k];
         return `
           <div style="padding:10px 0;border-bottom:1px solid #eee">
-            <div style="font-size:12px;color:#6b6b6b">${safeHtml(k)}</div>
-            <div style="font-size:15px"><b>${safeHtml((v ?? "").toString())}</b></div>
+            <div style="font-size:12px;color:#6b6b6b">${k}</div>
+            <div style="font-size:15px"><b>${(v ?? "").toString()}</b></div>
           </div>`;
       }).join("");
 
       const html = `
       <html><head><meta charset="utf-8">
-      <title>Ficha – ${safeHtml(estadoNombre)}</title>
+      <title>Ficha – ${estadoNombre}</title>
       </head>
       <body style="font-family:system-ui,Segoe UI,Arial;margin:18px;max-width:980px">
         <div style="border-radius:18px;padding:18px;border:1px solid #e6e6e6">
@@ -542,7 +523,7 @@
           <h2 style="margin:0 0 4px 0;color:#4a148c">
             Mapa interactivo del Fondo de Aportaciones para la Infraestructura Social (FAIS)
           </h2>
-          <div style="color:#555;margin-bottom:14px">${safeHtml(estadoNombre)} – Ficha de localidad / monto</div>
+          <div style="color:#555;margin-bottom:14px">${estadoNombre} – Ficha de localidad / monto</div>
           <div style="border:1px solid #f0f0f0;border-radius:14px;padding:14px">
             ${rows || "<i>Sin metadatos.</i>"}
           </div>
@@ -550,7 +531,6 @@
       </body></html>`;
 
       const w = window.open("", "_blank");
-      if (!w) return;
       w.document.open();
       w.document.write(html);
       w.document.close();
@@ -568,7 +548,12 @@
         <h2 style="margin:0 0 10px 0;color:#4a148c">Fuentes del proyecto</h2>
         <div style="border:1px solid #e6e6e6;border-radius:14px;padding:14px">
           <p style="margin:0 0 10px 0">
-            (Coloca aquí tus fuentes oficiales y metodología.)
+            Lorem, I. P., &amp; Ipsum, D. A. (2018). <i>Lorem ipsum dolor sit amet: Consectetur adipiscing elit en estudios territoriales</i>.
+            <i>Revista Ficticia de Ciencias Sociales</i>, 12(3), 45–67.
+            <a href="https://doi.org/10.1234/lorem.2018.003" target="_blank" rel="noopener">https://doi.org/10.1234/lorem.2018.003</a>
+          </p>
+          <p style="margin:0">
+            Dolor, S. A. (2021). <i>Sit amet, consectetur adipiscing elit: Perspectivas teóricas desde el lorem ipsum</i>. Editorial Ejemplo Académico.
           </p>
         </div>
 
@@ -581,9 +566,9 @@
         <div style="margin-top:16px;font-size:12px;color:#666">
           Observatorio de Pueblos Indígenas, Recursos Naturales y Medio Ambiente – ProSIG-CSH, CIESAS
         </div>
-      </body></html>`;
+      </body></html>
+      `;
       const w = window.open("", "_blank");
-      if (!w) return;
       w.document.open();
       w.document.write(html);
       w.document.close();
@@ -623,6 +608,7 @@
 
         if (capaMexico) map.removeLayer(capaMexico);
 
+        // ✅✅✅ ESTILO MÁS VISIBLE + HOVER
         capaMexico = L.geoJSON(data, {
           style: {
             color:"#4a148c",
@@ -632,35 +618,41 @@
           },
           onEachFeature: (f, layer) => {
             const props = f.properties || {};
-            const nom = getEntidadNombre(props) || "Entidad";
+            const nom = getEntidadNombre(props) || props["NOMGEO"] || "Entidad";
             const cve = String(props.CVE_EDO ?? "").padStart(2,"0");
 
-            const nomgeo = props.NOMGEO ?? nom;
-            const total = formatMxInt(props["TOTAL DE RECURSOS ASIGNADOS DEL FAIS 2025"]);
-            const pdf = pdfToHtml(props.PDF);
+            // Tooltip con campos solicitados (sin romper si hay "sin datos")
+            const nomgeo = props["NOMGEO"] || nom;
 
-            const html = `
-              <div style="min-width:280px">
-                <b>${safeHtml(nom)}</b><br>
-                <div style="margin-top:4px;color:#cfd3da"><b>NOMGEO:</b> ${safeHtml(nomgeo)}</div>
-                <div style="margin-top:2px;color:#cfd3da"><b>Total FAIS 2025:</b> ${safeHtml(total)}</div>
-                <div style="margin-top:2px;color:#cfd3da"><b>PDF:</b> ${pdf}</div>
-                <div style="margin-top:6px;color:#cfd3da;opacity:.85">Clic para abrir</div>
-              </div>
-            `;
+            const totalRaw = props["TOTAL DE RECURSOS ASIGNADOS DEL FAIS 2025"];
+            const totalNum = parseNum(totalRaw);
+            const totalFmt = (totalNum == null)
+              ? (totalRaw ?? "Sin datos")
+              : new Intl.NumberFormat("es-MX", { maximumFractionDigits:0 }).format(totalNum);
 
-            layer.bindTooltip(html, { sticky:true, direction:"top", opacity:0.95 });
+            const pdfStr = String(props["PDF"] ?? "").trim();
+            const pdfHtml = (/^https?:\/\//i.test(pdfStr))
+              ? `<a href="${encodeURI(pdfStr)}" target="_blank" rel="noopener">Abrir PDF</a>`
+              : (pdfStr || "Sin datos");
 
-            // hover visible y tooltip forzado
+            layer.bindTooltip(
+              `<b>${nom}</b><br>
+               <span style="color:#cfd3da"><b>NOMGEO:</b></span> ${nomgeo}<br>
+               <span style="color:#cfd3da"><b>Total FAIS 2025:</b></span> ${totalFmt}<br>
+               <span style="color:#cfd3da"><b>PDF:</b></span> ${pdfHtml}<br>
+               <span style="color:#cfd3da;opacity:.85">Clic para abrir</span>`,
+              { sticky:true }
+            );
+
+            // ✅ hover
             layer.on("mouseover", () => {
               layer.setStyle({ fillOpacity: 0.7, weight: 3 });
-              layer.openTooltip();
             });
             layer.on("mouseout", () => {
               capaMexico.resetStyle(layer);
-              layer.closeTooltip();
             });
 
+            // click por CVE_EDO
             layer.on("click", () => {
               const slug = CVE_TO_SLUG[cve];
               if (slug) enterState(slug);
@@ -679,7 +671,7 @@
     }
 
     /********************
-     * Microgeoportal por entidad
+     * Microgeoportal
      ********************/
     async function enterState(slug){
       const st = ESTADOS.find(e => e.slug === slug);
@@ -694,7 +686,6 @@
       showLoading(true);
 
       try{
-        // Municipios
         const munRes = await fetch(`${DATA_ESTADOS_DIR}/${slug}_mun.geojson`);
         if (!munRes.ok) throw new Error(`No se pudo cargar ${DATA_ESTADOS_DIR}/${slug}_mun.geojson`);
         const mun = await munRes.json();
@@ -714,13 +705,12 @@
             const nom = props.NOM_MUN || props.NOMBRE || props.MUNICIPIO || props.municipio || "Municipio";
             const nivel = rezagoNivel(props[REZAGO_FIELD]);
             layer.bindTooltip(
-              `<b>${safeHtml(nom)}</b><br><span style="color:#cfd3da">${safeHtml(REZAGO_FIELD)}:</span> ${safeHtml(nivel)}`,
+              `<b>${nom}</b><br><span style="color:#cfd3da">${REZAGO_FIELD}: </span>${nivel}`,
               { sticky:true }
             );
           }
         }).addTo(map);
 
-        // Localidades con monto
         const locRes = await fetch(`${DATA_ESTADOS_DIR}/${slug}_loc_monto.geojson`);
         if (!locRes.ok) throw new Error(`No se pudo cargar ${DATA_ESTADOS_DIR}/${slug}_loc_monto.geojson`);
         const loc = await locRes.json();
@@ -728,9 +718,9 @@
         capaLoc = L.geoJSON(loc, {
           pointToLayer,
           onEachFeature: (f, layer) => {
-            layer.on("mouseover", () => layer.setStyle({ fillColor:"var(--acento2)" };
-            layer.on("mouseout", () => layer.setStyle(puntoStyle(f.properties || {});
-            layer.on("click", () => openFicha(st.nombre, f.properties || {});
+            layer.on("mouseover", () => layer.setStyle({ fillColor:"var(--acento2)" }));
+            layer.on("mouseout", () => layer.setStyle(puntoStyle(f.properties || {})));
+            layer.on("click", () => openFicha(st.nombre, f.properties || {}));
           }
         }).addTo(map);
 
@@ -764,7 +754,7 @@
 
       removeLegend();
 
-      // volvemos a cargar nacional (limpio)
+      if (capaMexico) capaMexico.addTo(map);
       loadMexico();
     });
 
