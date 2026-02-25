@@ -719,7 +719,7 @@
           pointToLayer,
           onEachFeature: (f, layer) => {
             layer.on("mouseover", () => layer.setStyle({ fillColor:"var(--acento2)" });
-            layer.on("mouseout", () => layer.setStyle(puntoStyle(f.properties || {}));
+            layer.on("mouseout", () => layer.setStyle(puntoStyle(f.properties || {});
             layer.on("click", () => openFicha(st.nombre, f.properties || {});
           }
         }).addTo(map);
