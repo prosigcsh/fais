@@ -1,4 +1,4 @@
-<!doctype html> 
+<!doctype html>
 <html lang="es">
 <head>
   <meta charset="utf-8" />
@@ -48,7 +48,7 @@
 
     header{
       padding:12px 14px;
-      background:linear-gradient(90deg, rgba(74,20,140,.95), rgba(106,27,154,.88);
+      background:linear-gradient(90deg, rgba(74,20,140,.95), rgba(106,27,154,.88));
       border-bottom:1px solid rgba(255,255,255,.10);
     }
 
@@ -79,7 +79,7 @@
       max-width:160px;
       width:auto;
       object-fit:contain;
-      filter: drop-shadow(0 2px 10px rgba(0,0,0,.25);
+      filter: drop-shadow(0 2px 10px rgba(0,0,0,.25));
     }
     .brandbar img.logo-ciesas{ height:52px; max-width:180px; }
 
@@ -123,7 +123,7 @@
       justify-content:center;
       gap:10px;
       padding:10px 14px;
-      background:linear-gradient(180deg, rgba(22,24,39,.95), rgba(17,18,26,.92);
+      background:linear-gradient(180deg, rgba(22,24,39,.95), rgba(17,18,26,.92));
       border-bottom:1px solid var(--line);
     }
 
@@ -284,7 +284,6 @@
     <button id="btnBack" class="btn" disabled>⬅ Regresar al mapa nacional</button>
     <span class="pill" id="statePill">Vista: México</span>
     <button id="btnSources" class="btn">📚 Fuentes y créditos</button>
-    <!-- ✅ NUEVO BOTÓN -->
     <button id="btnMethod" class="btn">🧭 Metodología</button>
   </div>
 
@@ -450,13 +449,17 @@
         "MONTO","monto","MONTO_TOTAL","monto_total","MONTO_FAIS","MONTO FAIS",
         "IMPORTE","importe","ASIGNACION","asignacion","TOTAL","total"
       ];
-      for (const k of candidates) if (props && props[k] != null && props[k] !== "") return props[k];
+      for (const k of candidates){
+        if (props && props[k] != null && props[k] !== "") return props[k];
+      }
       return null;
     }
 
     function puntoStyle(props){
-      const monto = parseNum(getMonto(props);
-      const r = (monto == null) ? 7 : Math.max(6, Math.min(14, 6 + Math.sqrt(monto)/120);
+      const monto = parseNum(getMonto(props));
+      const r = (monto == null)
+        ? 7
+        : Math.max(6, Math.min(14, 6 + Math.sqrt(monto)/120));
       return {
         radius: r,
         fillColor: getComputedStyle(document.documentElement).getPropertyValue('--acento').trim() || "#ffb300",
@@ -467,7 +470,7 @@
     }
 
     function pointToLayer(feature, latlng){
-      return L.circleMarker(latlng, puntoStyle(feature.properties || {};
+      return L.circleMarker(latlng, puntoStyle(feature.properties || {}));
     }
 
     /********************
@@ -579,7 +582,7 @@
     document.getElementById("btnSources").addEventListener("click", openSources);
 
     /********************
-     * ✅ METODOLOGÍA (NUEVO)
+     * ✅ METODOLOGÍA
      ********************/
     function openMethodology(){
       const html = `
@@ -755,7 +758,6 @@
 
         if (capaMexico) map.removeLayer(capaMexico);
 
-        // ✅✅✅ ESTILO MÁS VISIBLE + HOVER
         capaMexico = L.geoJSON(data, {
           style: {
             color:"#4a148c",
@@ -768,7 +770,6 @@
             const nom = getEntidadNombre(props) || props["NOMGEO"] || "Entidad";
             const cve = String(props.CVE_EDO ?? "").padStart(2,"0");
 
-            // Tooltip con campos solicitados (sin romper si hay "sin datos")
             const nomgeo = props["NOMGEO"] || nom;
 
             const totalRaw = props["TOTAL DE RECURSOS ASIGNADOS DEL FAIS 2025"];
@@ -791,7 +792,6 @@
               { sticky:true }
             );
 
-            // ✅ hover
             layer.on("mouseover", () => {
               layer.setStyle({ fillOpacity: 0.7, weight: 3 });
             });
@@ -799,7 +799,6 @@
               capaMexico.resetStyle(layer);
             });
 
-            // click por CVE_EDO
             layer.on("click", () => {
               const slug = CVE_TO_SLUG[cve];
               if (slug) enterState(slug);
@@ -866,12 +865,14 @@
           pointToLayer,
           onEachFeature: (f, layer) => {
             layer.on("mouseover", () => {
-              layer.setStyle({ fillColor: getComputedStyle(document.documentElement).getPropertyValue('--acento2').trim() || "#ff6d00" });
+              layer.setStyle({
+                fillColor: getComputedStyle(document.documentElement).getPropertyValue('--acento2').trim() || "#ff6d00"
+              });
             });
             layer.on("mouseout", () => {
-              layer.setStyle(puntoStyle(f.properties || {});
+              layer.setStyle(puntoStyle(f.properties || {}));
             });
-            layer.on("click", () => openFicha(st.nombre, f.properties || {});
+            layer.on("click", () => openFicha(st.nombre, f.properties || {}));
           }
         }).addTo(map);
 
