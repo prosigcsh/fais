@@ -877,17 +877,27 @@
         capaLoc = L.geoJSON(loc, {
           pointToLayer,
           onEachFeature: (f, layer) => {
-            layer.on("mouseover", () => {
-              layer.setStyle({
-                fillColor: getComputedStyle(document.documentElement).getPropertyValue('--acento2').trim() || "#ff6d00"
-              });
-            });
-            layer.on("mouseout", () => {
-              layer.setStyle(puntoStyle(f.properties || {}));
-            });
-            layer.on("click", () => openFicha(st.nombre, f.properties || {}));
-          }
-        }).addTo(map);
+    const props = f.properties || {};
+    const locNom = props.LOCALIDAD || props.Localidad || props.localidad || "Localidad";
+    const montoLoc = formatMXN(props["MONTO ASIGNADO (PESOS)"]);
+
+    layer.bindTooltip(
+      `<b>${locNom}</b><br>
+       <span style="color:#cfd3da">Monto asignado:</span> ${montoLoc}`,
+      { sticky:true }
+    );
+
+    layer.on("mouseover", () => {
+      layer.setStyle({
+        fillColor: getComputedStyle(document.documentElement).getPropertyValue('--acento2').trim() || "#ff6d00"
+      });
+    });
+    layer.on("mouseout", () => {
+      layer.setStyle(puntoStyle(f.properties || {}));
+    });
+    layer.on("click", () => openFicha(st.nombre, f.properties || {}));
+  }
+}).addTo(map);
 
         setLayerControl({
           "Municipios (GRADO DE REZAGO)": capaMun,
