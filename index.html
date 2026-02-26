@@ -893,7 +893,7 @@
           onEachFeature: (f, layer) => {
             const props = f.properties || {};
             const locNom = props.LOCALIDAD || props.NOMBRE || "Localidad";
-            const montoLoc = formatMXN(getMontoAsignadoPesos(props));
+            const montoLoc = formatMXN(props["MONTO ASIGNADO (PESOS)"]);
 
     layer.bindTooltip(
       `<b>${locNom}</b><br>
