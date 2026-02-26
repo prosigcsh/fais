@@ -878,12 +878,12 @@
           pointToLayer,
           onEachFeature: (f, layer) => {
             const props = f.properties || {};
-            const locNom = props.LOCALIDAD || props.Localidad || props.localidad || "Localidad";
+            const locNom = props.LOCALIDAD || props.NOMBRE || "Localidad";
             const montoLoc = formatMXN(props["MONTO ASIGNADO (PESOS)"]);
 
     layer.bindTooltip(
       `<b>${locNom}</b><br>
-       <span style="color:#cfd3da">Monto asignado:</span> ${montoLoc}`,
+      <span style="color:#cfd3da">Monto asignado:</span> ${montoLoc}`,
       { sticky:true }
     );
 
