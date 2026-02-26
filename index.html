@@ -858,10 +858,13 @@
           },
           onEachFeature: (f, layer) => {
             const props = f.properties || {};
-            const nom = props.NOMGEO || props.NOM_MUN || props.NOMBRE || props.municipio || "Municipio";
+            const nom = props.NOMGEO || props.NOM_MUN || props.NOMBRE || props.MUNICIPIO || props.municipio || "Municipio";
             const nivel = rezagoNivel(props[REZAGO_FIELD]);
+            const montoMun = formatMXN(props.MONTOASIGNADO_TOTAL);
             layer.bindTooltip(
-              `<b>${nom}</b><br><span style="color:#cfd3da">${REZAGO_FIELD}: </span>${nivel}`,
+              `<b>${nom}</b><br>
+              <span style="color:#cfd3da">${REZAGO_FIELD}: </span>${nivel}<br>
+             <span style="color:#cfd3da">FAIS municipal:</span> ${montoMun}`, 
               { sticky:true }
             );
           }
