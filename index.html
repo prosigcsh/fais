@@ -877,9 +877,9 @@
         capaLoc = L.geoJSON(loc, {
           pointToLayer,
           onEachFeature: (f, layer) => {
-    const props = f.properties || {};
-    const locNom = props.LOCALIDAD || props.Localidad || props.localidad || "Localidad";
-    const montoLoc = formatMXN(props["MONTO ASIGNADO (PESOS)"]);
+            const props = f.properties || {};
+            const locNom = props.LOCALIDAD || props.Localidad || props.localidad || "Localidad";
+            const montoLoc = formatMXN(props["MONTO ASIGNADO (PESOS)"]);
 
     layer.bindTooltip(
       `<b>${locNom}</b><br>
