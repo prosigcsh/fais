@@ -391,6 +391,14 @@
       return Number.isFinite(n) ? n : null;
     }
 
+    /* ✅ Formato $431,633,000 MXN */
+    function formatMXN(x){
+      const n = parseNum(x);
+      if (n == null) return (x ?? "Sin datos").toString();
+      const num = new Intl.NumberFormat("es-MX", { maximumFractionDigits: 0 }).format(n);
+      return `$${num} MXN`;
+    }
+
     /********************
      * Map + basemaps
      ********************/
@@ -509,10 +517,15 @@
       const keys = Object.keys(props || {});
       const rows = keys.map(k => {
         const v = props[k];
+
+        /* ✅ Formatear como MXN campos "de dinero" por nombre */
+        const esMonto = /monto|importe|asignacion|total|recursos|fais/i.test(k);
+        const displayValue = esMonto ? formatMXN(v) : (v ?? "").toString();
+
         return `
           <div style="padding:10px 0;border-bottom:1px solid #eee">
             <div style="font-size:12px;color:#6b6b6b">${k}</div>
-            <div style="font-size:15px"><b>${(v ?? "").toString()}</b></div>
+            <div style="font-size:15px"><b>${displayValue}</b></div>
           </div>`;
       }).join("");
 
@@ -773,10 +786,7 @@
             const nomgeo = props["NOMGEO"] || nom;
 
             const totalRaw = props["TOTAL DE RECURSOS ASIGNADOS DEL FAIS 2025"];
-            const totalNum = parseNum(totalRaw);
-            const totalFmt = (totalNum == null)
-              ? (totalRaw ?? "Sin datos")
-              : new Intl.NumberFormat("es-MX", { maximumFractionDigits:0 }).format(totalNum);
+            const totalFmt = formatMXN(totalRaw);
 
             const pdfStr = String(props["PDF"] ?? "").trim();
             const pdfHtml = (/^https?:\/\//i.test(pdfStr))
