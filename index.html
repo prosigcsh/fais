@@ -385,11 +385,25 @@
     }
 
     function parseNum(x){
-      if (x == null) return null;
-      const s = x.toString().replace(/[^0-9.\-]/g,"");
-      const n = Number(s);
-      return Number.isFinite(n) ? n : null;
-    }
+  if (x == null) return null;
+
+  let s = x.toString().trim();
+
+  // elimina símbolos de moneda y texto
+  s = s.replace(/MXN|mxn|\$/g,"");
+
+  // elimina espacios invisibles
+  s = s.replace(/\s+/g,"");
+
+  // elimina separadores de miles (comas)
+  s = s.replace(/,/g,"");
+
+  // elimina cualquier cosa que no sea número o punto decimal
+  s = s.replace(/[^0-9.\-]/g,"");
+
+  const n = Number(s);
+  return Number.isFinite(n) ? n : null;
+}
 
     /* ✅ Formato $431,633,000 MXN */
     function formatMXN(x){
