@@ -508,22 +508,22 @@
      ********************/
     let legendControl = null;
 
-    function addLegend(){
-      removeLegend();
-      legendControl = L.control({ position: "bottomright" });
-      legendControl.onAdd = function(){
-        const div = L.DomUtil.create("div", "legend");
-        div.innerHTML = `
-          <div class="ttl"><b>${REZAGO_FIELD}</b> (3 niveles)</div>
-          <div class="row"><span class="swatch" style="background:var(--rez-alto)"></span> Alto</div>
-          <div class="row"><span class="swatch" style="background:var(--rez-medio)"></span> Medio</div>
-          <div class="row"><span class="swatch" style="background:var(--rez-bajo)"></span> Bajo</div>
-          <div class="row"><span class="swatch" style="background:var(--rez-sd)"></span> Sin dato</div>
-        `;
-        return div;
-      };
-      legendControl.addTo(map);
-    }
+    function addLegend() {
+  removeLegend();
+  legendControl = L.control({ position: "bottomright" });
+  legendControl.onAdd = function(){
+    const div = L.DomUtil.create("div", "legend");
+    div.innerHTML = `
+      <div class="ttl"><b>${REZAGO_FIELD}</b> (3 niveles)</div>
+      <div class="row"><span class="swatch" style="background:var(--rez-alto)"></span> Alto</div>
+      <div class="row"><span class="swatch" style="background:var(--rez-medio)"></span> Medio</div>
+      <div class="row"><span class="swatch" style="background:var(--rez-bajo)"></span> Bajo</div>
+      <div class="row"><span class="swatch" style="background:var(--acento)"></span> Localidades beneficiadas</div>
+    `;
+    return div;
+  };
+  legendControl.addTo(map);
+}
 
     function removeLegend(){
       if (legendControl){
