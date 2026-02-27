@@ -988,6 +988,35 @@ Programa Especial de Sistemas de Información Geográfica para Ciencias Sociales
 
     // INIT
     loadMexico();
+    // Función para buscar por nombre de localidad
+function searchLocation() {
+    const searchTerm = norm($("#search-input").value);  // Obtén el valor del input y normalízalo
+
+    // Filtra las localidades con base en el nombre de la localidad
+    const foundFeature = capaLoc.getLayers().find(layer => {
+        const props = layer.feature.properties || {};
+        const locName = props.LOCALIDAD || props.NOMBRE || "Localidad"; // Cambia a la propiedad que tengas
+        return norm(locName).includes(searchTerm);
+    });
+
+    // Si se encuentra la localidad, centramos el mapa en ella
+    if (foundFeature) {
+        map.setView(foundFeature.getLatLng(), 10); // Ajusta el zoom si es necesario
+        foundFeature.openTooltip();
+    } else {
+        alert("Localidad no encontrada");
+    }
+}
+
+// Evento para buscar al presionar la lupa
+document.getElementById("search-button").addEventListener("click", searchLocation);
+
+// O también al presionar "Enter" en el campo de búsqueda
+document.getElementById("search-input").addEventListener("keypress", function (e) {
+    if (e.key === "Enter") {
+        searchLocation();
+    }
+});
   </script>
 </body>
 </html>
