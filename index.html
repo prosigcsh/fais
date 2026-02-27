@@ -990,22 +990,24 @@ Programa Especial de Sistemas de Información Geográfica para Ciencias Sociales
     loadMexico();
     // Función para buscar por nombre de localidad
 function searchLocation() {
-    const searchTerm = norm($("#search-input").value);  // Obtén el valor del input y normalízalo
+  const searchTerm = norm($("#search-input").value); // Obtén el valor del input
+  console.log("Buscando:", searchTerm); // Depuración: Verifica el término de búsqueda
 
-    // Filtra las localidades con base en el nombre de la localidad
-    const foundFeature = capaLoc.getLayers().find(layer => {
-        const props = layer.feature.properties || {};
-        const locName = props.LOCALIDAD || props.NOMBRE || "Localidad"; // Cambia a la propiedad que tengas
-        return norm(locName).includes(searchTerm);
-    });
+  // Filtra las localidades con base en el nombre de la localidad
+  const foundFeature = capaloc.getLayers().find(layer => {
+    const props = layer.feature.properties || {};
+    const locName = props.LOCALIDAD || props.NOMBRE || "Localidad"; // Cambia a la propiedad que tengas
+    console.log("Comparando:", locName); // Depuración: Verifica el nombre de la localidad en cada capa
+    return norm(locName).includes(searchTerm);
+  });
 
-    // Si se encuentra la localidad, centramos el mapa en ella
-    if (foundFeature) {
-        map.setView(foundFeature.getLatLng(), 10); // Ajusta el zoom si es necesario
-        foundFeature.openTooltip();
-    } else {
-        alert("Localidad no encontrada");
-    }
+  // Si se encuentra la localidad, centramos el mapa en ella
+  if (foundFeature) {
+    map.setView(foundFeature.getLatLng(), 10); // Ajusta el zoom si es necesario
+    foundFeature.openTooltip();
+  } else {
+    alert("Localidad no encontrada");
+  }
 }
 
 // Evento para buscar al presionar la lupa
