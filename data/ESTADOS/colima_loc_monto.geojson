@@ -1,0 +1,9 @@
+{
+"type": "FeatureCollection",
+"name": "colima_loc_monto",
+"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
+"features": [
+{ "type": "Feature", "properties": { "NO": 1, "ENTIDAD": "COLIMA", "MUNICIPIO": "COMALA", "PUEBLO INDIGENA O AFROMEXICANO": "NAHUA", "LOCALIDAD": "SUCHITLÁN", "CLAVE LOC": 60030035, "TIPO DE ASENTAMIENTO": "COMUNIDAD INDIGENA", "NOMBRE": "SUCHITLÁN", "MONTO ASIGNADO (PESOS)": 966180, "LATITUD": 19.374705, "LONGITUD": -103.708896 }, "geometry": { "type": "Point", "coordinates": [ -103.708896, 19.374705 ] } },
+{ "type": "Feature", "properties": { "NO": 2, "ENTIDAD": "COLIMA", "MUNICIPIO": "COMALA", "PUEBLO INDIGENA O AFROMEXICANO": "NAHUA", "LOCALIDAD": "ZACUALPAN", "CLAVE LOC": 60030037, "TIPO DE ASENTAMIENTO": "COMUNIDAD INDIGENA", "NOMBRE": "ZACUALPAN", "MONTO ASIGNADO (PESOS)": 1677934, "LATITUD": 19.363486, "LONGITUD": -103.824048 }, "geometry": { "type": "Point", "coordinates": [ -103.824048, 19.363486 ] } }
+]
+}
