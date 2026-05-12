@@ -905,7 +905,7 @@ document.getElementById("btnMethod").addEventListener("click", openMethodology);
           onEachFeature: (f, layer) => {
             const props = f.properties || {};
             const nom = getEntidadNombre(props) || props["NOMBRE_EDO"] || "Entidad";
-            const cve = String(props.CVE_EDO ?? "").padStart(2,"0");
+            const cve = String(props.CVE_ENT ?? "").padStart(2,"0");
 
             const nomgeo = props["NOMBRE_EDO"] || nom;
 
