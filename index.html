@@ -936,7 +936,7 @@ document.getElementById("btnMethod").addEventListener("click", openMethodology);
             layer.on("click", () => {
               const slug = CVE_TO_SLUG[cve];
               if (slug) enterState(slug);
-              else alert("No hay slug configurado para CVE_EDO=" + cve + " (" + nom + ")");
+              else alert("No hay datos disponibles para esta entidad=" + cve + " (" + nom + ")");
             });
           }
         }).addTo(map);
