@@ -904,12 +904,12 @@ document.getElementById("btnMethod").addEventListener("click", openMethodology);
           },
           onEachFeature: (f, layer) => {
             const props = f.properties || {};
-            const nom = getEntidadNombre(props) || props["NOMGEO"] || "Entidad";
+            const nom = getEntidadNombre(props) || props["NOMBRE_EDO"] || "Entidad";
             const cve = String(props.CVE_EDO ?? "").padStart(2,"0");
 
-            const nomgeo = props["NOMGEO"] || nom;
+            const nomgeo = props["NOMBRE_EDO"] || nom;
 
-            const totalRaw = props["TOTAL DE RECURSOS ASIGNADOS DEL FAIS 2025"];
+            const totalRaw = props["MONTOASIGNADO_TOTAL"];
             const totalFmt = formatMXN(totalRaw);
 
             const pdfStr = String(props["PDF"] ?? "").trim();
@@ -919,7 +919,7 @@ document.getElementById("btnMethod").addEventListener("click", openMethodology);
 
             layer.bindTooltip(
               `<b>${nom}</b><br>
-               <span style="color:#cfd3da"><b>NOMGEO:</b></span> ${nomgeo}<br>
+               <span style="color:#cfd3da"><b>NOMBRE_EDO:</b></span> ${NOMBRE_EDO}<br>
                <span style="color:#cfd3da"><b>Total FAIS 2025:</b></span> ${totalFmt}<br>
                
                <span style="color:#cfd3da;opacity:.85">Clic para abrir</span>`,
