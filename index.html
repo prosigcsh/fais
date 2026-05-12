@@ -907,7 +907,7 @@ document.getElementById("btnMethod").addEventListener("click", openMethodology);
             const nom = getEntidadNombre(props) || props["NOMGEO"] || "Entidad";
             const cve = String(props.CVE_EDO ?? "").padStart(2,"0");
 
-            const nomgeo = props["NOMGEO"] || nom;
+            const nomgeo = props["NOMBRE_EDO"] || nom;
 
             const totalRaw = props["MONTOASIGNADO_TOTAL"];
             const totalFmt = formatMXN(totalRaw);
