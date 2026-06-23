@@ -675,6 +675,10 @@
       border-bottom:0;
     }
 
+    #printMapSheet{
+      display:none;
+    }
+
     .photoRoll{
       margin:14px 0 0 0;
       border:1px solid #e6e6e6;
@@ -883,55 +887,83 @@
         color:#111!important;
       }
 
-      body.print-map header{
-        background:#fff!important;
-        color:#111!important;
-        border-bottom:1px solid #ccc;
-      }
-
-      body.print-map .brandbar,
-      body.print-map #toolbar,
-      body.print-map #filterBar,
-      body.print-map footer,
-      body.print-map #loading,
-      body.print-map .leaflet-control-zoom,
-      body.print-map .leaflet-control-layers,
-      body.print-map .modal-overlay{
+      body.print-map > header,
+      body.print-map > #toolbar,
+      body.print-map > #filterBar,
+      body.print-map > #map,
+      body.print-map > #analysisPanel,
+      body.print-map > #loading,
+      body.print-map > footer,
+      body.print-map > .modal-overlay{
         display:none!important;
       }
 
-      body.print-map #map{
+      body.print-map #printMapSheet{
         display:block!important;
-        height:calc(100vh - 92px)!important;
-        min-height:0!important;
         width:100%!important;
-        border:1px solid #ccc;
       }
 
-      body.print-map .legend,
-      body.print-map .analysis-panel{
+      .print-map-title{
+        margin:0 0 4px;
+        color:#111;
+        font-size:20px;
+        text-align:center;
+      }
+
+      .print-map-subtitle{
+        margin:0 0 10px;
+        color:#555;
+        font-size:12px;
+        text-align:center;
+      }
+
+      .print-map-frame{
+        position:relative;
+        width:100%;
+        overflow:hidden;
+        border:1px solid #aaa;
+        background:#e7e4ec;
+      }
+
+      .print-map-clone{
         position:absolute!important;
+        top:0!important;
+        left:0!important;
+        display:block!important;
+        min-height:0!important;
+        transform-origin:top left!important;
+      }
+
+      .print-map-clone .leaflet-control-zoom,
+      .print-map-clone .leaflet-control-layers{
+        display:none!important;
+      }
+
+      .print-map-clone .leaflet-pane,
+      .print-map-clone .leaflet-tile,
+      .print-map-clone svg{
+        visibility:visible!important;
+      }
+
+      .print-analysis-clone{
+        position:absolute!important;
+        right:12px!important;
+        bottom:22px!important;
+        z-index:1000!important;
+        display:block!important;
+        width:300px!important;
+        max-height:145mm!important;
+        overflow:hidden!important;
         color:#111!important;
-        background:rgba(255,255,255,.94)!important;
-        border:1px solid #bbb!important;
+        background:rgba(255,255,255,.95)!important;
+        border:1px solid #999!important;
         box-shadow:none!important;
       }
 
-      body.print-map .analysis-panel{
-        right:16px!important;
-        bottom:24px!important;
-        max-height:none!important;
-        width:320px!important;
-      }
-
-      body.print-map .legend{
-        max-width:280px!important;
-      }
-
-      body.print-map .analysis-note,
-      body.print-map .metric{
-        background:#fff!important;
+      .print-analysis-clone .analysis-note,
+      .print-analysis-clone .metric{
         color:#111!important;
+        background:#fff!important;
       }
 
       body.print-modal > header,
@@ -1016,6 +1048,7 @@
       <span class="pill" id="statePill">Vista: M&eacute;xico</span>
       <button id="btnSources" class="btn">Fuentes y cr&eacute;ditos</button>
       <button id="btnMethod" class="btn">Metodolog&iacute;a</button>
+      <button id="btnDataNotes" class="btn" type="button">Datos y limitaciones</button>
       <button id="btnPrintMap" class="btn" type="button">Imprimir mapa</button>
     </div>
   </div>
@@ -1072,6 +1105,8 @@
   <footer>
     Observatorio de Pueblos Ind&iacute;genas, Recursos Naturales y Medio Ambiente del ProSIG-CSH, CIESAS.
   </footer>
+
+  <section id="printMapSheet" aria-hidden="true"></section>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script>
@@ -1673,15 +1708,74 @@
       if (e.key === "Escape" && infoModal.classList.contains("is-open")) closePanel();
     });
 
-    function printWithMode(mode){
+    function waitForMapTiles(timeout = 1800){
+      const tiles = [...document.querySelectorAll("#map .leaflet-tile")];
+      const pending = tiles.filter(img => !img.complete);
+      if (!pending.length) return Promise.resolve();
+
+      return new Promise(resolve => {
+        let finished = 0;
+        const done = () => {
+          finished++;
+          if (finished >= pending.length) resolve();
+        };
+        pending.forEach(img => {
+          img.addEventListener("load", done, { once:true });
+          img.addEventListener("error", done, { once:true });
+        });
+        setTimeout(resolve, timeout);
+      });
+    }
+
+    function preparePrintMapSheet(){
+      const sheet = $("printMapSheet");
+      const sourceMap = $("map");
+      const rect = sourceMap.getBoundingClientRect();
+      const targetWidth = 920;
+      const scale = targetWidth / Math.max(rect.width, 1);
+      const mapClone = $("map").cloneNode(true);
+      mapClone.removeAttribute("id");
+      mapClone.classList.add("print-map-clone");
+      mapClone.style.width = `${rect.width}px`;
+      mapClone.style.height = `${rect.height}px`;
+      mapClone.style.transform = `scale(${scale})`;
+
+      mapClone.querySelectorAll(".leaflet-control-zoom,.leaflet-control-layers").forEach(el => el.remove());
+
+      const frame = document.createElement("div");
+      frame.className = "print-map-frame";
+      frame.style.height = `${Math.min(rect.height * scale, 690)}px`;
+      frame.appendChild(mapClone);
+
+      if (!$("analysisPanel").hidden){
+        const analysisClone = $("analysisPanel").cloneNode(true);
+        analysisClone.removeAttribute("id");
+        analysisClone.removeAttribute("hidden");
+        analysisClone.classList.add("print-analysis-clone");
+        frame.appendChild(analysisClone);
+      }
+
+      const currentView = $("statePill").textContent.replace(/^Vista:\s*/i, "");
+      sheet.innerHTML = `
+        <h1 class="print-map-title">Geoportal del Fondo de Aportaciones para la Infraestructura Social (FAIS)</h1>
+        <p class="print-map-subtitle">${escapeHtml(currentView)} · ${escapeHtml($("filterStatus").textContent || "Consulta territorial")}</p>
+      `;
+      sheet.appendChild(frame);
+    }
+
+    async function printWithMode(mode){
       document.body.classList.remove("print-map", "print-modal");
+      if (mode === "print-map"){
+        await waitForMapTiles();
+        preparePrintMapSheet();
+      }
       document.body.classList.add(mode);
-      if (mode === "print-map") map.invalidateSize();
-      setTimeout(() => window.print(), 120);
+      setTimeout(() => window.print(), 350);
     }
 
     window.addEventListener("afterprint", () => {
       document.body.classList.remove("print-map", "print-modal");
+      $("printMapSheet").innerHTML = "";
       setTimeout(() => map.invalidateSize(), 120);
     });
 
@@ -1864,6 +1958,71 @@ Programa Especial de Sistemas de Información Geográfica para Ciencias Sociales
     }
 
     document.getElementById("btnSources").addEventListener("click", openSources);
+
+    function openDataNotes(){
+      openPanel("Datos y limitaciones", `
+        <div class="info-sheet">
+          <p class="sheet-kicker">Transparencia y calidad del dato</p>
+          <h2 class="sheet-title">Datos, alcance y limitaciones</h2>
+          <p class="sheet-subtitle">
+            Información necesaria para interpretar correctamente los mapas y evitar conclusiones fuera del alcance del proyecto.
+          </p>
+
+          <div class="sheet-grid">
+            ${sheetCard("Asignaciones FAIS", "2025", true)}
+            ${sheetCard("Rezago social", "CONEVAL 2020", true)}
+            ${sheetCard("Población y autoadscripción", "Censo INEGI 2020")}
+            ${sheetCard("Unidad de análisis", "Municipio y localidad")}
+          </div>
+
+          <h3>Origen de la información</h3>
+          <ul>
+            <li>Asignaciones de recursos FAIS publicadas en archivos PDF durante 2025.</li>
+            <li>Índice de Rezago Social 2020 del CONEVAL.</li>
+            <li>Censo de Población y Vivienda 2020 del INEGI.</li>
+            <li>Marco Geoestadístico Nacional del INEGI para límites municipales.</li>
+          </ul>
+
+          <h3>Procesamiento</h3>
+          <ul>
+            <li>Los PDF fueron convertidos y consolidados en bases tabulares.</li>
+            <li>Las localidades se vincularon mediante claves geoestadísticas y coordenadas.</li>
+            <li>Los montos municipales se obtuvieron mediante suma de localidades beneficiadas.</li>
+            <li>Los rangos bajo, medio y alto de montos se calculan por terciles dentro de cada entidad, no a escala nacional.</li>
+            <li>El rezago mostrado en tres niveles agrupa “Muy alto/Alto”, conserva “Medio” y agrupa “Bajo/Muy bajo”.</li>
+          </ul>
+
+          <h3>Disponibilidad y ausencias</h3>
+          <p>
+            La metodología reporta ausencia de información descargable para Aguascalientes, Baja California Sur,
+            Nuevo León y Tamaulipas, así como falta de publicación asociada a periodos electorales para Durango y Veracruz.
+            En el mapa nacional estas situaciones deben interpretarse como <b>sin datos disponibles</b>, no como monto cero.
+          </p>
+
+          <h3>Limitaciones</h3>
+          <ul>
+            <li>El geoportal no constituye una evaluación de impacto del FAIS.</li>
+            <li>No realiza análisis causal ni determina si el monto asignado fue suficiente.</li>
+            <li>No incluye la ubicación exacta ni el tipo específico de cada obra financiada.</li>
+            <li>Algunas coordenadas fueron incorporadas manualmente cuando no existió coincidencia automática.</li>
+            <li>Los años de los indicadores sociales y de las asignaciones FAIS son distintos; deben compararse con cautela.</li>
+            <li>La calidad de los resultados depende de la consistencia de los archivos fuente publicados.</li>
+          </ul>
+
+          <p class="sheet-note">
+            “Sin datos” significa que la información no estaba disponible o no pudo integrarse.
+            No debe interpretarse como ausencia de población, necesidades sociales o recursos.
+          </p>
+
+          <p style="color:#666;font-size:12px">
+            Interfaz revisada el 23 de junio de 2026. Esta fecha corresponde a la versión del geoportal,
+            no necesariamente a una actualización de las fuentes estadísticas.
+          </p>
+        </div>
+      `);
+    }
+
+    document.getElementById("btnDataNotes").addEventListener("click", openDataNotes);
 
 /********************
  * ✅ METODOLOGÍA
