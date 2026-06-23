@@ -46,6 +46,10 @@
       height:100%;
     }
 
+    body.modal-open{
+      overflow:hidden;
+    }
+
     header{
       padding:12px 14px;
       background:linear-gradient(90deg, rgba(74,20,140,.95), rgba(106,27,154,.88));
@@ -126,6 +130,57 @@
       background:linear-gradient(180deg, rgba(22,24,39,.95), rgba(17,18,26,.92));
       border-bottom:1px solid var(--line);
     }
+    .toolbar-group{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    #search-container{
+      display:flex;
+      align-items:center;
+      min-width:min(420px,100%);
+      flex:1 1 320px;
+      max-width:520px;
+      border:1px solid rgba(255,255,255,.14);
+      border-radius:12px;
+      background:rgba(255,255,255,.06);
+      overflow:hidden;
+    }
+
+    #search-input{
+      width:100%;
+      min-width:0;
+      border:0;
+      outline:0;
+      padding:10px 12px;
+      color:var(--txt);
+      background:transparent;
+      font:inherit;
+      font-size:14px;
+    }
+
+    #search-input::placeholder{
+      color:rgba(244,245,247,.68);
+    }
+
+    #search-button{
+      width:42px;
+      min-height:42px;
+      border:0;
+      border-left:1px solid rgba(255,255,255,.10);
+      background:rgba(255,255,255,.08);
+      color:var(--txt);
+      cursor:pointer;
+      font-size:16px;
+      line-height:1;
+    }
+
+    #search-button:hover{
+      background:rgba(255,255,255,.16);
+    }
 
     .btn{
       border:1px solid rgba(255,255,255,.14);
@@ -156,6 +211,91 @@
     }
 
     #map{ flex:1; }
+
+    .analysis-panel{
+      position:fixed;
+      right:14px;
+      top:188px;
+      z-index:850;
+      width:min(340px,calc(100vw - 28px));
+      max-height:calc(100vh - 270px);
+      overflow:auto;
+      border:1px solid rgba(255,255,255,.14);
+      border-radius:14px;
+      background:rgba(17,18,26,.94);
+      color:var(--txt);
+      box-shadow:0 14px 42px rgba(0,0,0,.34);
+      backdrop-filter:blur(3px);
+    }
+
+    .analysis-panel[hidden]{
+      display:none;
+    }
+
+    .analysis-head{
+      padding:12px 14px 10px;
+      border-bottom:1px solid rgba(255,255,255,.10);
+    }
+
+    .analysis-kicker{
+      margin-bottom:3px;
+      color:var(--txt2);
+      font-size:11px;
+      text-transform:uppercase;
+      letter-spacing:.06em;
+    }
+
+    .analysis-title{
+      margin:0;
+      font-size:16px;
+      line-height:1.25;
+    }
+
+    .analysis-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:8px;
+      padding:12px;
+    }
+
+    .metric{
+      border:1px solid rgba(255,255,255,.10);
+      border-radius:10px;
+      padding:10px;
+      background:rgba(255,255,255,.055);
+    }
+
+    .metric-value{
+      font-size:17px;
+      font-weight:700;
+      line-height:1.2;
+    }
+
+    .metric-label{
+      margin-top:3px;
+      color:var(--txt2);
+      font-size:11px;
+      line-height:1.3;
+    }
+
+    .analysis-note{
+      margin:0 12px 12px;
+      padding:11px 12px;
+      border-left:3px solid var(--acento);
+      border-radius:8px;
+      background:rgba(255,179,0,.10);
+      color:var(--txt2);
+      font-size:12px;
+      line-height:1.45;
+    }
+
+    .analysis-list{
+      margin:0;
+      padding:0 12px 12px 28px;
+      color:var(--txt2);
+      font-size:12px;
+      line-height:1.45;
+    }
 
     footer{
       padding:10px 14px;
@@ -250,6 +390,256 @@
       border:1px solid rgba(0,0,0,.35);
       flex:0 0 auto;
     }
+
+    .modal-overlay{
+      position:fixed;
+      inset:0;
+      z-index:10000;
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding:18px;
+      background:rgba(0,0,0,.58);
+      backdrop-filter:blur(3px);
+    }
+
+    .modal-overlay.is-open{
+      display:flex;
+    }
+
+    .modal-panel{
+      width:min(980px,100%);
+      max-height:min(86vh,820px);
+      display:flex;
+      flex-direction:column;
+      overflow:hidden;
+      background:#fff;
+      color:#222;
+      border-radius:16px;
+      border:1px solid rgba(255,255,255,.18);
+      box-shadow:0 18px 60px rgba(0,0,0,.45);
+    }
+
+    .modal-header{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      padding:14px 16px;
+      color:#fff;
+      background:linear-gradient(90deg, var(--morado-osc), var(--morado));
+    }
+
+    .modal-header h2{
+      margin:0;
+      font-size:17px;
+      line-height:1.25;
+    }
+
+    .modal-close{
+      width:38px;
+      height:38px;
+      border:1px solid rgba(255,255,255,.22);
+      border-radius:10px;
+      background:rgba(255,255,255,.10);
+      color:#fff;
+      cursor:pointer;
+      font-size:24px;
+      line-height:1;
+    }
+
+    .modal-close:hover{
+      background:rgba(255,255,255,.18);
+    }
+
+    .modal-body{
+      overflow:auto;
+      padding:18px;
+      line-height:1.55;
+      -webkit-overflow-scrolling:touch;
+    }
+
+    .modal-body a{
+      color:var(--morado);
+      overflow-wrap:anywhere;
+    }
+
+    .modal-body h2,
+    .modal-body h3{
+      color:var(--morado-osc)!important;
+    }
+
+    .modal-body img{
+      max-width:100%;
+      height:auto;
+    }
+
+    .photoRoll{
+      margin:14px 0 0 0;
+      border:1px solid #e6e6e6;
+      border-radius:14px;
+      padding:12px;
+      background:#fff;
+      max-height:520px;
+      overflow-y:auto;
+    }
+
+    .photoItem{
+      margin:0 0 14px 0;
+      padding:0 0 14px 0;
+      border-bottom:1px solid #f0f0f0;
+    }
+
+    .photoItem:last-child{
+      border-bottom:none;
+      margin-bottom:0;
+      padding-bottom:0;
+    }
+
+    .photoItem img{
+      width:100%;
+      height:auto;
+      border-radius:12px;
+      display:block;
+    }
+
+    .photoCap{
+      margin-top:8px;
+      font-size:12px;
+      color:#555;
+    }
+
+    .photoCap b{ color:#222; }
+
+    @media (max-width: 760px){
+      html,body{
+        overflow:auto;
+      }
+
+      body{
+        min-height:100%;
+      }
+
+      header{
+        padding:10px 12px;
+      }
+
+      .brandbar{
+        gap:8px;
+        margin-bottom:8px;
+      }
+
+      .brandbar a{
+        padding:4px 6px;
+        border-radius:10px;
+      }
+
+      .brandbar img{
+        height:32px;
+        max-width:112px;
+      }
+
+      .brandbar img.logo-ciesas{
+        height:38px;
+        max-width:130px;
+      }
+
+      header h1{
+        font-size:15px;
+      }
+
+      header .sub{
+        font-size:11px;
+        line-height:1.35;
+      }
+
+      .opirna-link{
+        white-space:normal;
+      }
+
+      #toolbar{
+        align-items:stretch;
+        gap:8px;
+        padding:8px 10px;
+      }
+
+      .toolbar-group,
+      #search-container,
+      .btn,
+      .pill{
+        width:100%;
+      }
+
+      .btn,
+      .pill{
+        text-align:center;
+        white-space:normal;
+      }
+
+      #map{
+        min-height:58vh;
+      }
+
+      .analysis-panel{
+        left:10px;
+        right:10px;
+        top:auto;
+        bottom:46px;
+        width:auto;
+        max-height:34vh;
+        border-radius:14px 14px 0 0;
+      }
+
+      .analysis-grid{
+        grid-template-columns:1fr 1fr;
+        padding:10px;
+      }
+
+      .metric{
+        padding:8px;
+      }
+
+      .metric-value{
+        font-size:15px;
+      }
+
+      footer{
+        font-size:11px;
+        padding:8px 10px;
+      }
+
+      .legend{
+        max-width:210px;
+      }
+
+      .leaflet-control-layers{
+        max-width:230px;
+        font-size:12px;
+      }
+
+      .modal-overlay{
+        align-items:flex-end;
+        padding:0;
+      }
+
+      .modal-panel{
+        width:100%;
+        max-height:88vh;
+        border-radius:16px 16px 0 0;
+      }
+
+      .modal-header{
+        padding:12px 14px;
+      }
+
+      .modal-header h2{
+        font-size:15px;
+      }
+
+      .modal-body{
+        padding:14px;
+      }
+    }
   </style>
 </head>
 
@@ -271,48 +661,58 @@
 
     <h1 id="title">Geoportal del Fondo de Aportaciones para la Infraestructura Social (FAIS)</h1>
 
-    <!-- Aquí va el campo de búsqueda con la lupa -->
-    <div id="search-container" style="position: absolute; left: 10px; top: 10px; z-index: 1000;">
-      <input type="text" id="search-input" placeholder="Buscar localidad..." style="padding: 5px; font-size: 16px; border-radius: 4px;">
-      <button id="search-button" style="padding: 5px; border-radius: 4px; background-color: #4a148c; color: white;">
-        🔍
-      </button>
-    </div>
-
     <div class="sub" id="subtitle">
-      <span>Mapa nacional – da clic en una entidad</span>
-      <span style="opacity:.6">•</span>
+      <span>Mapa nacional - da clic en una entidad</span>
+      <span style="opacity:.6">&bull;</span>
       <a class="opirna-link" href="https://opirna.ciesas.edu.mx" target="_blank" rel="noopener">
-        Observatorio de Pueblos Indígenas, Recursos Naturales y Medio Ambiente del ProSIG-CSH, CIESAS
+        Observatorio de Pueblos Ind&iacute;genas, Recursos Naturales y Medio Ambiente del ProSIG-CSH, CIESAS
       </a>
     </div>
-</header>
+  </header>
 
   <div id="toolbar">
-    <button id="btnBack" class="btn" disabled>⬅ Regresar al mapa nacional</button>
-    <span class="pill" id="statePill">Vista: México</span>
-    <button id="btnSources" class="btn"> Fuentes y créditos</button>
-    <button id="btnMethod" class="btn"> Metodología</button>
+    <div id="search-container" role="search" aria-label="Buscar localidad">
+      <input type="text" id="search-input" placeholder="Buscar localidad o municipio..." autocomplete="off">
+      <button id="search-button" type="button" aria-label="Buscar">&#128269;</button>
+    </div>
+    <div class="toolbar-group">
+      <button id="btnBack" class="btn" disabled>&larr; Regresar al mapa nacional</button>
+      <span class="pill" id="statePill">Vista: M&eacute;xico</span>
+      <button id="btnSources" class="btn">Fuentes y cr&eacute;ditos</button>
+      <button id="btnMethod" class="btn">Metodolog&iacute;a</button>
+    </div>
   </div>
 
   <div id="map"></div>
 
+  <aside id="analysisPanel" class="analysis-panel" aria-live="polite" hidden></aside>
+
   <div id="loading">
     <div class="card">
-      <h3>Cargando datos…</h3>
+      <h3>Cargando datos...</h3>
       <p>Estoy preparando el microgeoportal de la entidad seleccionada.</p>
       <div class="spinner"></div>
     </div>
   </div>
 
+  <div id="infoModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modalTitle" aria-hidden="true">
+    <section class="modal-panel">
+      <div class="modal-header">
+        <h2 id="modalTitle">Información</h2>
+        <button id="modalClose" class="modal-close" type="button" aria-label="Cerrar">&times;</button>
+      </div>
+      <div id="modalBody" class="modal-body"></div>
+    </section>
+  </div>
+
   <footer>
-    Observatorio de Pueblos Indígenas, Recursos Naturales y Medio Ambiente del ProSIG-CSH, CIESAS.
+    Observatorio de Pueblos Ind&iacute;genas, Recursos Naturales y Medio Ambiente del ProSIG-CSH, CIESAS.
   </footer>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script>
     /********************
-     * CONFIG (25 entidades)
+     * CONFIG (26 entidades)
      ********************/
     const ESTADOS = [
       { slug:"bajacalifornia", nombre:"Baja California", center:[30.5,-115.0], zoom:6 },
@@ -415,6 +815,16 @@
   return Number.isFinite(n) ? n : null;
 }
 
+    function escapeHtml(value){
+      return (value ?? "").toString().replace(/[&<>"']/g, (ch) => ({
+        "&":"&amp;",
+        "<":"&lt;",
+        ">":"&gt;",
+        "\"":"&quot;",
+        "'":"&#039;"
+      }[ch]));
+    }
+
     /* ✅ Formato $431,633,000 MXN */
     function formatMXN(x){
       const n = parseNum(x);
@@ -506,6 +916,136 @@
     }
 
     /********************
+     * Resumen territorial
+     ********************/
+    function featuresOf(geojson){
+      return Array.isArray(geojson?.features) ? geojson.features : [];
+    }
+
+    function firstValue(props, keys){
+      for (const k of keys){
+        if (props && props[k] != null && props[k] !== "") return props[k];
+      }
+      return null;
+    }
+
+    function getMontoLocalidad(props){
+      return firstValue(props, [
+        "MONTO ASIGNADO (PESOS)",
+        "MONTO_ASIGNADO_PESOS",
+        "MONTO_ASIGNADO",
+        "MONTO",
+        "monto",
+        "TOTAL"
+      ]);
+    }
+
+    function getMontoMunicipal(props){
+      return firstValue(props, [
+        "MONTOASIGNADO_TOTAL",
+        "MONTO ASIGNADO TOTAL",
+        "MONTO_TOTAL",
+        "MONTO",
+        "monto",
+        "TOTAL"
+      ]);
+    }
+
+    function getMunicipioNombre(props){
+      return firstValue(props, [
+        "NOMGEO",
+        "NOM_MUN",
+        "NOMBRE",
+        "MUNICIPIO",
+        "municipio"
+      ]) || "Municipio sin nombre";
+    }
+
+    function buildStateSummary(st, mun, loc){
+      const munFeatures = featuresOf(mun);
+      const locFeatures = featuresOf(loc);
+      const rezago = { Alto:0, Medio:0, Bajo:0, "Sin dato":0 };
+      let maxMun = { nombre:"Sin datos", monto:null };
+      let totalMunicipal = 0;
+      let totalLocalidades = 0;
+
+      for (const ft of munFeatures){
+        const props = ft.properties || {};
+        const nivel = rezagoNivel(props[REZAGO_FIELD]);
+        rezago[nivel] = (rezago[nivel] || 0) + 1;
+
+        const monto = parseNum(getMontoMunicipal(props));
+        if (monto != null){
+          totalMunicipal += monto;
+          if (maxMun.monto == null || monto > maxMun.monto){
+            maxMun = { nombre:getMunicipioNombre(props), monto };
+          }
+        }
+      }
+
+      for (const ft of locFeatures){
+        const monto = parseNum(getMontoLocalidad(ft.properties || {}));
+        if (monto != null) totalLocalidades += monto;
+      }
+
+      const montoBase = totalMunicipal || totalLocalidades;
+      const lectura = rezago.Alto > 0
+        ? `Hay ${rezago.Alto} municipio(s) con rezago alto. Conviene revisar si la distribución de localidades y montos coincide con esas zonas prioritarias.`
+        : "No se identifican municipios con rezago alto en la capa cargada; la lectura puede concentrarse en rezago medio, dispersión territorial y monto asignado.";
+
+      return {
+        estado: st.nombre,
+        municipios: munFeatures.length,
+        localidades: locFeatures.length,
+        montoTotal: montoBase,
+        rezago,
+        maxMun,
+        lectura
+      };
+    }
+
+    function renderAnalysisPanel(summary){
+      const panel = $("analysisPanel");
+      panel.hidden = false;
+      panel.innerHTML = `
+        <div class="analysis-head">
+          <div class="analysis-kicker">Resumen territorial</div>
+          <h2 class="analysis-title">${escapeHtml(summary.estado)}</h2>
+        </div>
+        <div class="analysis-grid">
+          <div class="metric">
+            <div class="metric-value">${summary.municipios}</div>
+            <div class="metric-label">Municipios en la capa</div>
+          </div>
+          <div class="metric">
+            <div class="metric-value">${summary.localidades}</div>
+            <div class="metric-label">Localidades beneficiadas</div>
+          </div>
+          <div class="metric">
+            <div class="metric-value">${formatMXN(summary.montoTotal)}</div>
+            <div class="metric-label">Monto total identificado</div>
+          </div>
+          <div class="metric">
+            <div class="metric-value">${summary.rezago.Alto || 0}</div>
+            <div class="metric-label">Municipios con rezago alto</div>
+          </div>
+        </div>
+        <p class="analysis-note">${escapeHtml(summary.lectura)}</p>
+        <ul class="analysis-list">
+          <li>Rezago medio: ${summary.rezago.Medio || 0} municipio(s).</li>
+          <li>Rezago bajo: ${summary.rezago.Bajo || 0} municipio(s).</li>
+          <li>Mayor monto municipal: ${escapeHtml(summary.maxMun.nombre)} (${formatMXN(summary.maxMun.monto)}).</li>
+        </ul>
+      `;
+    }
+
+    function hideAnalysisPanel(){
+      const panel = $("analysisPanel");
+      panel.hidden = true;
+      panel.innerHTML = "";
+    }
+
+    /********************
      * Leyenda rezago
      ********************/
     let legendControl = null;
@@ -535,6 +1075,47 @@
     }
 
     /********************
+     * Panel interno
+     ********************/
+    const infoModal = $("infoModal");
+    const modalTitle = $("modalTitle");
+    const modalBody = $("modalBody");
+    const modalClose = $("modalClose");
+
+    function extractBodyContent(html){
+      const match = html.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
+      return match ? match[1] : html;
+    }
+
+    function openPanel(title, html){
+      modalTitle.textContent = title;
+      modalBody.innerHTML = html;
+      infoModal.classList.add("is-open");
+      infoModal.setAttribute("aria-hidden", "false");
+      document.body.classList.add("modal-open");
+      modalClose.focus();
+    }
+
+    function openPanelFromDocument(title, html){
+      openPanel(title, extractBodyContent(html));
+    }
+
+    function closePanel(){
+      infoModal.classList.remove("is-open");
+      infoModal.setAttribute("aria-hidden", "true");
+      document.body.classList.remove("modal-open");
+      modalBody.innerHTML = "";
+    }
+
+    modalClose.addEventListener("click", closePanel);
+    infoModal.addEventListener("click", (e) => {
+      if (e.target === infoModal) closePanel();
+    });
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && infoModal.classList.contains("is-open")) closePanel();
+    });
+
+    /********************
      * Ficha
      ********************/
     function openFicha(estadoNombre, props){
@@ -548,8 +1129,8 @@
 
         return `
           <div style="padding:10px 0;border-bottom:1px solid #eee">
-            <div style="font-size:12px;color:#6b6b6b">${k}</div>
-            <div style="font-size:15px"><b>${displayValue}</b></div>
+            <div style="font-size:12px;color:#6b6b6b">${escapeHtml(k)}</div>
+            <div style="font-size:15px"><b>${escapeHtml(displayValue)}</b></div>
           </div>`;
       }).join("");
 
@@ -565,17 +1146,14 @@
           <h2 style="margin:0 0 4px 0;color:#4a148c">
             Mapa interactivo del Fondo de Aportaciones para la Infraestructura Social (FAIS)
           </h2>
-          <div style="color:#555;margin-bottom:14px">${estadoNombre} – Ficha de localidad / monto</div>
+          <div style="color:#555;margin-bottom:14px">${escapeHtml(estadoNombre)} – Ficha de localidad / monto</div>
           <div style="border:1px solid #f0f0f0;border-radius:14px;padding:14px">
             ${rows || "<i>Sin metadatos.</i>"}
           </div>
         </div>
       </body></html>`;
 
-      const w = window.open("", "_blank");
-      w.document.open();
-      w.document.write(html);
-      w.document.close();
+      openPanelFromDocument(`Ficha – ${estadoNombre}`, html);
     }
 
     /********************
@@ -640,10 +1218,7 @@ Programa Especial de Sistemas de Información Geográfica para Ciencias Sociales
         </div>
       </body></html>
       `;
-      const w = window.open("", "_blank");
-      w.document.open();
-      w.document.write(html);
-      w.document.close();
+      openPanelFromDocument("Fuentes y créditos", html);
     }
 
     document.getElementById("btnSources").addEventListener("click", openSources);
@@ -758,7 +1333,7 @@ function openMethodology(){
         </p>
 
         <p style="margin:0 0 12px 0;color:#222">
-          <li>Monto total asignado por estado y número total de localidades beneficiadas por estado (calculado mediante suma manual).
+          También se calculó el monto total asignado por estado y el número total de localidades beneficiadas por entidad federativa.
         </p>
 
         <h3 style="margin:14px 0 8px 0;color:#4a148c">3. Generación de capas geográficas en QGIS</h3>
@@ -842,12 +1417,13 @@ function openMethodology(){
           </div>
         </div>
     
-              <div class="photoItem">
+        <div class="photoItem">
           <img src="assets/fotos/metodo_04.jpg" alt="Foto metodología 04">
           <div class="photoCap">
             <b>Foto tomada por:</b> Vanesa Jaimes López (febrero, 2026)
           </div>
         </div>
+      </div>
 
       <div style="margin-top:14px;font-size:12px;color:#666">
         Observatorio de Pueblos Indígenas, Recursos Naturales y Medio Ambiente – ProSIG-CSH, CIESAS
@@ -856,10 +1432,7 @@ function openMethodology(){
   </html>
   `;
 
-  const w = window.open("", "_blank");
-  w.document.open();
-  w.document.write(html);
-  w.document.close();
+  openPanelFromDocument("Metodología", html);
 }
 
 document.getElementById("btnMethod").addEventListener("click", openMethodology);
@@ -873,6 +1446,7 @@ document.getElementById("btnMethod").addEventListener("click", openMethodology);
 
     function clearMicro(){
       removeLegend();
+      hideAnalysisPanel();
       if (capaMun){ map.removeLayer(capaMun); capaMun = null; }
       if (capaLoc){ map.removeLayer(capaLoc); capaLoc = null; }
       setLayerControl({});
@@ -1029,6 +1603,7 @@ document.getElementById("btnMethod").addEventListener("click", openMethodology);
           "Localidades (Monto)": capaLoc
         });
 
+        renderAnalysisPanel(buildStateSummary(st, mun, loc));
         addLegend();
 
         if (st.center && st.zoom){
@@ -1220,3 +1795,6 @@ document.getElementById("search-input").addEventListener("keydown", function (e)
   </script>
 </body>
 </html>
+
+
+
