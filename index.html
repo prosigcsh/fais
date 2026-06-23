@@ -513,24 +513,43 @@
       background:linear-gradient(90deg, var(--morado-osc), var(--morado));
     }
 
+    .modal-actions{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      flex:0 0 auto;
+    }
+
     .modal-header h2{
       margin:0;
       font-size:17px;
       line-height:1.25;
+      min-width:0;
     }
 
+    .modal-print,
     .modal-close{
-      width:38px;
+      min-width:38px;
       height:38px;
       border:1px solid rgba(255,255,255,.22);
       border-radius:10px;
       background:rgba(255,255,255,.10);
       color:#fff;
       cursor:pointer;
+    }
+
+    .modal-print{
+      padding:0 10px;
+      font-size:13px;
+      white-space:nowrap;
+    }
+
+    .modal-close{
       font-size:24px;
       line-height:1;
     }
 
+    .modal-print:hover,
     .modal-close:hover{
       background:rgba(255,255,255,.18);
     }
@@ -849,6 +868,114 @@
         grid-template-columns:1fr;
       }
     }
+
+    @media print{
+      @page{
+        size:landscape;
+        margin:10mm;
+      }
+
+      html,
+      body{
+        height:auto;
+        overflow:visible!important;
+        background:#fff!important;
+        color:#111!important;
+      }
+
+      body.print-map header{
+        background:#fff!important;
+        color:#111!important;
+        border-bottom:1px solid #ccc;
+      }
+
+      body.print-map .brandbar,
+      body.print-map #toolbar,
+      body.print-map #filterBar,
+      body.print-map footer,
+      body.print-map #loading,
+      body.print-map .leaflet-control-zoom,
+      body.print-map .leaflet-control-layers,
+      body.print-map .modal-overlay{
+        display:none!important;
+      }
+
+      body.print-map #map{
+        display:block!important;
+        height:calc(100vh - 92px)!important;
+        min-height:0!important;
+        width:100%!important;
+        border:1px solid #ccc;
+      }
+
+      body.print-map .legend,
+      body.print-map .analysis-panel{
+        position:absolute!important;
+        color:#111!important;
+        background:rgba(255,255,255,.94)!important;
+        border:1px solid #bbb!important;
+        box-shadow:none!important;
+      }
+
+      body.print-map .analysis-panel{
+        right:16px!important;
+        bottom:24px!important;
+        max-height:none!important;
+        width:320px!important;
+      }
+
+      body.print-map .legend{
+        max-width:280px!important;
+      }
+
+      body.print-map .analysis-note,
+      body.print-map .metric{
+        background:#fff!important;
+        color:#111!important;
+      }
+
+      body.print-modal > header,
+      body.print-modal > #toolbar,
+      body.print-modal > #filterBar,
+      body.print-modal > #map,
+      body.print-modal > #analysisPanel,
+      body.print-modal > #loading,
+      body.print-modal > footer{
+        display:none!important;
+      }
+
+      body.print-modal .modal-overlay{
+        position:static!important;
+        inset:auto!important;
+        display:block!important;
+        padding:0!important;
+        background:#fff!important;
+        backdrop-filter:none!important;
+      }
+
+      body.print-modal .modal-panel{
+        width:100%!important;
+        max-height:none!important;
+        border:0!important;
+        border-radius:0!important;
+        box-shadow:none!important;
+      }
+
+      body.print-modal .modal-header{
+        display:none!important;
+      }
+
+      body.print-modal .modal-body{
+        overflow:visible!important;
+        padding:0!important;
+      }
+
+      body.print-modal .sheet-card,
+      body.print-modal .sheet-details,
+      body.print-modal .sheet-note{
+        break-inside:avoid;
+      }
+    }
   </style>
 </head>
 
@@ -889,6 +1016,7 @@
       <span class="pill" id="statePill">Vista: M&eacute;xico</span>
       <button id="btnSources" class="btn">Fuentes y cr&eacute;ditos</button>
       <button id="btnMethod" class="btn">Metodolog&iacute;a</button>
+      <button id="btnPrintMap" class="btn" type="button">Imprimir mapa</button>
     </div>
   </div>
 
@@ -932,7 +1060,10 @@
     <section class="modal-panel">
       <div class="modal-header">
         <h2 id="modalTitle">Información</h2>
-        <button id="modalClose" class="modal-close" type="button" aria-label="Cerrar">&times;</button>
+        <div class="modal-actions">
+          <button id="modalPrint" class="modal-print" type="button">Imprimir ficha</button>
+          <button id="modalClose" class="modal-close" type="button" aria-label="Cerrar">&times;</button>
+        </div>
       </div>
       <div id="modalBody" class="modal-body"></div>
     </section>
@@ -1506,6 +1637,7 @@
     const modalTitle = $("modalTitle");
     const modalBody = $("modalBody");
     const modalClose = $("modalClose");
+    const modalPrint = $("modalPrint");
 
     function extractBodyContent(html){
       const match = html.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
@@ -1515,6 +1647,7 @@
     function openPanel(title, html){
       modalTitle.textContent = title;
       modalBody.innerHTML = html;
+      modalPrint.textContent = title.startsWith("Localidad") || title.startsWith("Municipio") ? "Imprimir ficha" : "Imprimir panel";
       infoModal.classList.add("is-open");
       infoModal.setAttribute("aria-hidden", "false");
       document.body.classList.add("modal-open");
@@ -1538,6 +1671,23 @@
     });
     document.addEventListener("keydown", (e) => {
       if (e.key === "Escape" && infoModal.classList.contains("is-open")) closePanel();
+    });
+
+    function printWithMode(mode){
+      document.body.classList.remove("print-map", "print-modal");
+      document.body.classList.add(mode);
+      if (mode === "print-map") map.invalidateSize();
+      setTimeout(() => window.print(), 120);
+    }
+
+    window.addEventListener("afterprint", () => {
+      document.body.classList.remove("print-map", "print-modal");
+      setTimeout(() => map.invalidateSize(), 120);
+    });
+
+    $("btnPrintMap").addEventListener("click", () => printWithMode("print-map"));
+    modalPrint.addEventListener("click", () => {
+      if (infoModal.classList.contains("is-open")) printWithMode("print-modal");
     });
 
     /********************
