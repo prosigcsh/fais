@@ -337,6 +337,210 @@
       line-height:1.45;
     }
 
+    .dashboard-panel{
+      position:fixed;
+      top:0;
+      right:0;
+      bottom:0;
+      z-index:1200;
+      display:flex;
+      flex-direction:column;
+      width:min(720px,92vw);
+      background:#f5f6f8;
+      color:#171820;
+      border-left:1px solid #d7d9df;
+      box-shadow:-18px 0 48px rgba(0,0,0,.38);
+    }
+
+    .dashboard-panel[hidden]{
+      display:none;
+    }
+
+    .dashboard-head{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:16px;
+      padding:18px 20px 14px;
+      background:#fff;
+      border-bottom:1px solid #dfe1e6;
+    }
+
+    .dashboard-kicker{
+      margin-bottom:4px;
+      color:#6b6e78;
+      font-size:11px;
+      font-weight:700;
+      text-transform:uppercase;
+    }
+
+    .dashboard-title{
+      margin:0;
+      font-size:20px;
+      line-height:1.2;
+    }
+
+    .dashboard-close{
+      flex:0 0 38px;
+      width:38px;
+      height:38px;
+      border:1px solid #d7d9df;
+      border-radius:6px;
+      background:#fff;
+      color:#292b34;
+      cursor:pointer;
+      font-size:24px;
+      line-height:1;
+    }
+
+    .dashboard-tools{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      padding:10px 20px;
+      background:#fff;
+      border-bottom:1px solid #dfe1e6;
+    }
+
+    .scale-switch{
+      display:inline-flex;
+      padding:3px;
+      border:1px solid #d5d7dd;
+      border-radius:7px;
+      background:#eceef2;
+    }
+
+    .scale-btn{
+      min-height:34px;
+      border:0;
+      border-radius:5px;
+      padding:6px 12px;
+      background:transparent;
+      color:#555862;
+      cursor:pointer;
+      font-weight:650;
+    }
+
+    .scale-btn.is-active{
+      background:#4a148c;
+      color:#fff;
+    }
+
+    .scale-btn:disabled{
+      cursor:not-allowed;
+      opacity:.45;
+    }
+
+    .dashboard-context{
+      color:#636670;
+      font-size:12px;
+      line-height:1.35;
+      text-align:right;
+    }
+
+    .dashboard-content{
+      flex:1;
+      overflow:auto;
+      padding:16px 20px 24px;
+    }
+
+    .dashboard-stats{
+      display:grid;
+      grid-template-columns:repeat(4,minmax(0,1fr));
+      gap:10px;
+      margin-bottom:14px;
+    }
+
+    .dashboard-stat{
+      min-width:0;
+      padding:12px;
+      border:1px solid #dddfe5;
+      border-radius:7px;
+      background:#fff;
+    }
+
+    .dashboard-stat strong{
+      display:block;
+      overflow-wrap:anywhere;
+      color:#241233;
+      font-size:17px;
+      line-height:1.2;
+    }
+
+    .dashboard-stat span{
+      display:block;
+      margin-top:4px;
+      color:#6b6e78;
+      font-size:11px;
+      line-height:1.3;
+    }
+
+    .dashboard-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:12px;
+    }
+
+    .chart-card{
+      min-width:0;
+      padding:14px;
+      border:1px solid #dddfe5;
+      border-radius:7px;
+      background:#fff;
+    }
+
+    .chart-card.wide{
+      grid-column:1 / -1;
+    }
+
+    .chart-card h3{
+      margin:0;
+      color:#262832;
+      font-size:14px;
+      line-height:1.3;
+    }
+
+    .chart-card p{
+      min-height:30px;
+      margin:4px 0 10px;
+      color:#71747e;
+      font-size:11px;
+      line-height:1.35;
+    }
+
+    .chart-box{
+      position:relative;
+      height:240px;
+      min-height:240px;
+    }
+
+    .chart-card.wide .chart-box{
+      height:270px;
+    }
+
+    .dashboard-empty{
+      display:grid;
+      place-items:center;
+      height:100%;
+      padding:20px;
+      color:#777a84;
+      text-align:center;
+      font-size:12px;
+      line-height:1.45;
+    }
+
+    .dashboard-note{
+      margin:14px 0 0;
+      padding:10px 12px;
+      border-left:3px solid #ffb300;
+      border-radius:5px;
+      background:#fff8df;
+      color:#555862;
+      font-size:11px;
+      line-height:1.45;
+    }
+
     .legend{
       font-size:12px;
     }
@@ -813,6 +1017,52 @@
         padding:10px;
       }
 
+      .dashboard-panel{
+        width:100%;
+        border-left:0;
+      }
+
+      .dashboard-head{
+        padding:14px;
+      }
+
+      .dashboard-tools{
+        align-items:stretch;
+        flex-direction:column;
+        padding:10px 14px;
+      }
+
+      .scale-switch{
+        display:grid;
+        grid-template-columns:1fr 1fr;
+        width:100%;
+      }
+
+      .dashboard-context{
+        text-align:left;
+      }
+
+      .dashboard-content{
+        padding:12px 14px 20px;
+      }
+
+      .dashboard-stats{
+        grid-template-columns:1fr 1fr;
+      }
+
+      .dashboard-grid{
+        grid-template-columns:1fr;
+      }
+
+      .chart-card.wide{
+        grid-column:auto;
+      }
+
+      .chart-box,
+      .chart-card.wide .chart-box{
+        height:250px;
+      }
+
       .metric{
         padding:8px;
       }
@@ -892,6 +1142,7 @@
       body.print-map > #filterBar,
       body.print-map > #map,
       body.print-map > #analysisPanel,
+      body.print-map > #dashboardPanel,
       body.print-map > #loading,
       body.print-map > footer,
       body.print-map > .modal-overlay{
@@ -971,6 +1222,7 @@
       body.print-modal > #filterBar,
       body.print-modal > #map,
       body.print-modal > #analysisPanel,
+      body.print-modal > #dashboardPanel,
       body.print-modal > #loading,
       body.print-modal > footer{
         display:none!important;
@@ -1049,6 +1301,7 @@
       <button id="btnSources" class="btn">Fuentes y cr&eacute;ditos</button>
       <button id="btnMethod" class="btn">Metodolog&iacute;a</button>
       <button id="btnDataNotes" class="btn" type="button">Datos y limitaciones</button>
+      <button id="btnDashboard" class="btn" type="button">Dashboard</button>
       <button id="btnPrintMap" class="btn" type="button">Imprimir mapa</button>
     </div>
   </div>
@@ -1081,6 +1334,28 @@
 
   <aside id="analysisPanel" class="analysis-panel" aria-live="polite" hidden></aside>
 
+  <aside id="dashboardPanel" class="dashboard-panel" aria-labelledby="dashboardTitle" hidden>
+    <div class="dashboard-head">
+      <div>
+        <div class="dashboard-kicker">Lectura socio-territorial</div>
+        <h2 id="dashboardTitle" class="dashboard-title">Dashboard FAIS</h2>
+      </div>
+      <button id="dashboardClose" class="dashboard-close" type="button" aria-label="Cerrar dashboard">&times;</button>
+    </div>
+    <div class="dashboard-tools">
+      <div class="scale-switch" aria-label="Escala territorial">
+        <button id="scaleNational" class="scale-btn is-active" type="button">Nacional</button>
+        <button id="scaleState" class="scale-btn" type="button" disabled>Entidad</button>
+      </div>
+      <div id="dashboardContext" class="dashboard-context">Comparación entre entidades disponibles</div>
+    </div>
+    <div class="dashboard-content">
+      <div id="dashboardStats" class="dashboard-stats"></div>
+      <div id="dashboardCharts" class="dashboard-grid"></div>
+      <p id="dashboardNote" class="dashboard-note"></p>
+    </div>
+  </aside>
+
   <div id="loading">
     <div class="card">
       <h3>Cargando datos...</h3>
@@ -1109,6 +1384,7 @@
   <section id="printMapSheet" aria-hidden="true"></section>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
   <script>
     /********************
      * CONFIG (26 entidades)
@@ -1389,6 +1665,10 @@
     let currentSummary = null;
     let currentMontoBreaks = null;
     let currentMunRezagoByName = new Map();
+    let currentState = null;
+    let currentMexicoGeoJSON = null;
+    let currentMunGeoJSON = null;
+    let currentLocGeoJSON = null;
     const activeFilters = { rezago:"Todos", monto:"Todos" };
 
     function buildMunicipioRezagoIndex(mun){
@@ -1481,6 +1761,7 @@
       }
 
       updateFilterStatus(munVisible, locVisible);
+      if (!$("dashboardPanel").hidden) renderDashboard();
     }
 
     function updateFilterStatus(munVisible, locVisible){
@@ -1608,6 +1889,487 @@
     }
 
     /********************
+     * Dashboard socio-territorial
+     ********************/
+    let dashboardScale = "national";
+    const dashboardCharts = {};
+
+    function compactMXN(value){
+      const n = parseNum(value);
+      if (n == null) return "Sin datos";
+      return new Intl.NumberFormat("es-MX", {
+        notation:"compact",
+        maximumFractionDigits:1
+      }).format(n);
+    }
+
+    function destroyDashboardCharts(){
+      Object.values(dashboardCharts).forEach(chart => chart?.destroy());
+      Object.keys(dashboardCharts).forEach(key => delete dashboardCharts[key]);
+    }
+
+    function dashboardStat(value, label){
+      return `
+        <div class="dashboard-stat">
+          <strong>${escapeHtml(value)}</strong>
+          <span>${escapeHtml(label)}</span>
+        </div>
+      `;
+    }
+
+    function dashboardCard(id, title, description, wide = false){
+      return `
+        <article class="chart-card${wide ? " wide" : ""}">
+          <h3>${escapeHtml(title)}</h3>
+          <p>${escapeHtml(description)}</p>
+          <div class="chart-box"><canvas id="${id}"></canvas></div>
+        </article>
+      `;
+    }
+
+    function showChartEmpty(canvasId, message){
+      const canvas = $(canvasId);
+      if (!canvas) return;
+      const box = canvas.parentElement;
+      canvas.remove();
+      box.innerHTML = `<div class="dashboard-empty">${escapeHtml(message)}</div>`;
+    }
+
+    function chartBaseOptions(extra = {}){
+      return {
+        responsive:true,
+        maintainAspectRatio:false,
+        animation:{ duration:260 },
+        interaction:{ mode:"nearest", intersect:true },
+        plugins:{
+          legend:{ labels:{ color:"#494c56", boxWidth:12, font:{ size:11 } } },
+          tooltip:{
+            callbacks:{
+              label(context){
+                const raw = context.raw;
+                const value = typeof raw === "object" && raw !== null ? raw.y : raw;
+                return `${context.dataset.label || ""}: ${formatInt(value)}`;
+              }
+            }
+          }
+        },
+        scales:{
+          x:{
+            ticks:{ color:"#666974", font:{ size:10 } },
+            grid:{ color:"rgba(0,0,0,.07)" }
+          },
+          y:{
+            ticks:{ color:"#666974", font:{ size:10 } },
+            grid:{ color:"rgba(0,0,0,.07)" }
+          }
+        },
+        ...extra
+      };
+    }
+
+    function createDashboardChart(key, canvasId, config){
+      if (typeof Chart === "undefined"){
+        showChartEmpty(canvasId, "No fue posible cargar el componente de gráficos. Verifique la conexión a internet.");
+        return null;
+      }
+      dashboardCharts[key] = new Chart($(canvasId), config);
+      return dashboardCharts[key];
+    }
+
+    function getPopulation(props){
+      return parseNum(firstValue(props, [
+        "POBLACIÓN 2020",
+        "POBLACION 2020",
+        "POBLACION_TOTAL",
+        "POBTOT"
+      ]));
+    }
+
+    function getPoverty(props){
+      return parseNum(firstValue(props, [
+        "POBLACIÓN EN SITUACIÓN DE POBREZA 2020",
+        "POBLACION EN SITUACION DE POBREZA 2020",
+        "POBREZA 2020",
+        "POBREZA"
+      ]));
+    }
+
+    function getBenefitedLocalities(props){
+      return parseNum(firstValue(props, [
+        "No. LOCALIDADES BENEFICIADAS",
+        "NO. LOCALIDADES BENEFICIADAS",
+        "LOCALIDADES BENEFICIADAS",
+        "NUM_LOCALIDADES"
+      ]));
+    }
+
+    function municipioFeaturePasses(feature){
+      if (activeFilters.rezago === "Todos") return true;
+      return rezagoNivel((feature.properties || {})[REZAGO_FIELD]) === activeFilters.rezago;
+    }
+
+    function localidadFeaturePasses(feature){
+      const props = feature.properties || {};
+      if (activeFilters.rezago !== "Todos"){
+        const munName = norm(repairText(props.MUNICIPIO || props.NOMGEO || props.NOM_MUN || ""));
+        if (currentMunRezagoByName.get(munName) !== activeFilters.rezago) return false;
+      }
+      return activeFilters.monto === "Todos" ||
+        montoNivel(getMontoLocalidad(props)) === activeFilters.monto;
+    }
+
+    function focusMunicipio(name){
+      if (!capaMun || !currentState) return;
+      let target = null;
+      capaMun.eachLayer(layer => {
+        if (target) return;
+        const props = layer.feature?.properties || {};
+        if (norm(getMunicipioNombre(props)) === norm(name)) target = layer;
+      });
+      if (!target) return;
+      const bounds = target.getBounds?.();
+      if (bounds?.isValid()) map.fitBounds(bounds, { padding:[40,40], maxZoom:11 });
+      target.openTooltip?.();
+      closeDashboard();
+      openMunicipioFicha(currentState.nombre, target.feature?.properties || {});
+    }
+
+    function enterEntityFromDashboard(cve){
+      const slug = CVE_TO_SLUG[String(cve ?? "").padStart(2,"0")];
+      if (!slug) return;
+      closeDashboard();
+      enterState(slug);
+    }
+
+    function renderNationalDashboard(){
+      const features = featuresOf(currentMexicoGeoJSON);
+      const rows = features.map(feature => {
+        const props = feature.properties || {};
+        return {
+          nombre:repairText(getEntidadNombre(props) || props.NOMGEO || "Entidad"),
+          cve:String(props.CVE_ENT ?? "").padStart(2,"0"),
+          monto:parseNum(getMontoMunicipal(props)),
+          localidades:getBenefitedLocalities(props)
+        };
+      });
+      const withAmount = rows.filter(row => row.monto != null);
+      const withLocalities = rows.filter(row => row.localidades != null);
+      const totalAmount = withAmount.reduce((sum,row) => sum + row.monto, 0);
+      const totalLocalities = withLocalities.reduce((sum,row) => sum + row.localidades, 0);
+
+      $("dashboardContext").textContent = "Comparación entre entidades con información disponible";
+      $("dashboardStats").innerHTML = [
+        dashboardStat(formatInt(features.length), "Entidades en la capa nacional"),
+        dashboardStat(formatInt(withAmount.length), "Entidades con monto"),
+        dashboardStat(formatMXN(totalAmount), "Monto nacional identificado"),
+        dashboardStat(formatInt(totalLocalities), "Localidades beneficiadas")
+      ].join("");
+      $("dashboardCharts").innerHTML = [
+        dashboardCard("chartNationalAmount", "Monto FAIS por entidad", "Diez entidades con mayor monto identificado. Pulse una barra para abrir la entidad.", true),
+        dashboardCard("chartNationalLocalities", "Localidades beneficiadas", "Comparación de las diez entidades con más localidades registradas."),
+        dashboardCard("chartNationalRelation", "Monto y cobertura territorial", "Relación descriptiva entre monto asignado y número de localidades beneficiadas.")
+      ].join("");
+      $("dashboardNote").textContent =
+        "La escala nacional resume únicamente las entidades presentes en la capa. Las comparaciones son descriptivas: un monto mayor no implica por sí mismo mayor necesidad, cobertura o impacto.";
+
+      const topAmount = [...withAmount].sort((a,b) => b.monto - a.monto).slice(0,10);
+      if (topAmount.length){
+        createDashboardChart("nationalAmount", "chartNationalAmount", {
+          type:"bar",
+          data:{
+            labels:topAmount.map(row => row.nombre),
+            datasets:[{
+              label:"Monto FAIS",
+              data:topAmount.map(row => row.monto),
+              backgroundColor:"#6a1b9a",
+              borderRadius:3
+            }]
+          },
+          options:chartBaseOptions({
+            indexAxis:"y",
+            onClick(event, elements){
+              if (elements.length) enterEntityFromDashboard(topAmount[elements[0].index].cve);
+            },
+            plugins:{
+              legend:{ display:false },
+              tooltip:{ callbacks:{ label:ctx => formatMXN(ctx.raw) } }
+            },
+            scales:{
+              x:{ ticks:{ callback:value => compactMXN(value), color:"#666974" }, grid:{ color:"rgba(0,0,0,.07)" } },
+              y:{ ticks:{ color:"#555862", font:{ size:10 } }, grid:{ display:false } }
+            }
+          })
+        });
+      }else showChartEmpty("chartNationalAmount", "La capa nacional no contiene montos comparables.");
+
+      const topLocalities = [...withLocalities].sort((a,b) => b.localidades - a.localidades).slice(0,10);
+      if (topLocalities.length){
+        createDashboardChart("nationalLocalities", "chartNationalLocalities", {
+          type:"bar",
+          data:{
+            labels:topLocalities.map(row => row.nombre),
+            datasets:[{
+              label:"Localidades",
+              data:topLocalities.map(row => row.localidades),
+              backgroundColor:"#ffb300",
+              borderRadius:3
+            }]
+          },
+          options:chartBaseOptions({
+            plugins:{ legend:{ display:false } },
+            scales:{
+              x:{ ticks:{ color:"#666974", maxRotation:55, minRotation:35, font:{ size:9 } }, grid:{ display:false } },
+              y:{ beginAtZero:true, ticks:{ color:"#666974" }, grid:{ color:"rgba(0,0,0,.07)" } }
+            }
+          })
+        });
+      }else showChartEmpty("chartNationalLocalities", "No se identificó el número de localidades beneficiadas por entidad.");
+
+      const relation = rows.filter(row => row.monto != null && row.localidades != null);
+      if (relation.length){
+        createDashboardChart("nationalRelation", "chartNationalRelation", {
+          type:"scatter",
+          data:{
+            datasets:[{
+              label:"Entidades",
+              data:relation.map(row => ({ x:row.localidades, y:row.monto, nombre:row.nombre, cve:row.cve })),
+              backgroundColor:"#4a148c",
+              pointRadius:5,
+              pointHoverRadius:7
+            }]
+          },
+          options:chartBaseOptions({
+            onClick(event, elements){
+              if (elements.length) enterEntityFromDashboard(relation[elements[0].index].cve);
+            },
+            plugins:{
+              legend:{ display:false },
+              tooltip:{ callbacks:{
+                title:items => items[0]?.raw?.nombre || "",
+                label:ctx => [`Monto: ${formatMXN(ctx.raw.y)}`, `Localidades: ${formatInt(ctx.raw.x)}`]
+              } }
+            },
+            scales:{
+              x:{ title:{ display:true, text:"Localidades beneficiadas" }, ticks:{ color:"#666974" }, grid:{ color:"rgba(0,0,0,.07)" } },
+              y:{ title:{ display:true, text:"Monto FAIS" }, ticks:{ callback:value => compactMXN(value), color:"#666974" }, grid:{ color:"rgba(0,0,0,.07)" } }
+            }
+          })
+        });
+      }else showChartEmpty("chartNationalRelation", "No hay suficientes pares de monto y localidades para esta comparación.");
+    }
+
+    function renderStateDashboard(){
+      const munFeatures = featuresOf(currentMunGeoJSON).filter(municipioFeaturePasses);
+      const locFeatures = featuresOf(currentLocGeoJSON).filter(localidadFeaturePasses);
+      const municipalities = munFeatures.map(feature => {
+        const props = feature.properties || {};
+        const population = getPopulation(props);
+        const poverty = getPoverty(props);
+        const povertyPct = population && poverty != null
+          ? (poverty <= 100 ? poverty : (poverty / population) * 100)
+          : null;
+        return {
+          feature,
+          nombre:repairText(getMunicipioNombre(props)),
+          monto:parseNum(getMontoMunicipal(props)),
+          rezago:rezagoNivel(props[REZAGO_FIELD]),
+          localidades:getBenefitedLocalities(props),
+          population,
+          poverty,
+          povertyPct
+        };
+      });
+      const totalAmount = municipalities.reduce((sum,row) => sum + (row.monto || 0), 0);
+      const totalLocAmount = locFeatures.reduce((sum,feature) =>
+        sum + (parseNum(getMontoLocalidad(feature.properties || {})) || 0), 0);
+      const highLag = municipalities.filter(row => row.rezago === "Alto").length;
+
+      $("dashboardContext").textContent =
+        `${currentState?.nombre || "Entidad"} · ${$("filterStatus").textContent}`;
+      $("dashboardStats").innerHTML = [
+        dashboardStat(formatInt(municipalities.length), "Municipios seleccionados"),
+        dashboardStat(formatInt(locFeatures.length), "Localidades visibles"),
+        dashboardStat(formatMXN(totalAmount || totalLocAmount), "Monto identificado"),
+        dashboardStat(formatInt(highLag), "Municipios con rezago alto")
+      ].join("");
+      $("dashboardCharts").innerHTML = [
+        dashboardCard("chartStateAmount", "Monto por municipio", "Diez municipios con mayor asignación. Pulse una barra para localizarlo en el mapa.", true),
+        dashboardCard("chartStateLag", "Distribución del rezago social", "Municipios según la agrupación alto, medio y bajo."),
+        dashboardCard("chartStateLocalities", "Localidades beneficiadas", "Municipios con mayor número de localidades registradas."),
+        dashboardCard("chartStatePoverty", "Pobreza y asignación FAIS", "Relación descriptiva entre población en pobreza y monto municipal.", true)
+      ].join("");
+      $("dashboardNote").textContent =
+        "Los gráficos responden a los filtros del mapa. La relación entre pobreza y monto es descriptiva y no demuestra causalidad ni mide por sí sola suficiencia, eficiencia o impacto del gasto.";
+
+      const topAmount = municipalities
+        .filter(row => row.monto != null)
+        .sort((a,b) => b.monto - a.monto)
+        .slice(0,10);
+      if (topAmount.length){
+        createDashboardChart("stateAmount", "chartStateAmount", {
+          type:"bar",
+          data:{
+            labels:topAmount.map(row => row.nombre),
+            datasets:[{
+              label:"Monto FAIS",
+              data:topAmount.map(row => row.monto),
+              backgroundColor:topAmount.map(row => colorRezago3(row.rezago)),
+              borderRadius:3
+            }]
+          },
+          options:chartBaseOptions({
+            indexAxis:"y",
+            onClick(event, elements){
+              if (elements.length) focusMunicipio(topAmount[elements[0].index].nombre);
+            },
+            plugins:{
+              legend:{ display:false },
+              tooltip:{ callbacks:{ label:ctx => formatMXN(ctx.raw) } }
+            },
+            scales:{
+              x:{ ticks:{ callback:value => compactMXN(value), color:"#666974" }, grid:{ color:"rgba(0,0,0,.07)" } },
+              y:{ ticks:{ color:"#555862", font:{ size:10 } }, grid:{ display:false } }
+            }
+          })
+        });
+      }else showChartEmpty("chartStateAmount", "No hay montos municipales para la selección actual.");
+
+      const lagCounts = ["Alto","Medio","Bajo","Sin dato"].map(level => ({
+        level,
+        value:municipalities.filter(row => row.rezago === level).length
+      })).filter(row => row.value > 0);
+      if (lagCounts.length){
+        createDashboardChart("stateLag", "chartStateLag", {
+          type:"doughnut",
+          data:{
+            labels:lagCounts.map(row => row.level),
+            datasets:[{
+              data:lagCounts.map(row => row.value),
+              backgroundColor:lagCounts.map(row => colorRezago3(row.level)),
+              borderColor:"#fff",
+              borderWidth:2
+            }]
+          },
+          options:chartBaseOptions({
+            cutout:"58%",
+            plugins:{
+              legend:{ position:"bottom", labels:{ color:"#555862", boxWidth:12, font:{ size:10 } } },
+              tooltip:{ callbacks:{ label:ctx => `${ctx.label}: ${formatInt(ctx.raw)} municipio(s)` } }
+            },
+            scales:{}
+          })
+        });
+      }else showChartEmpty("chartStateLag", "No hay municipios para la selección actual.");
+
+      const topLocalities = municipalities
+        .filter(row => row.localidades != null)
+        .sort((a,b) => b.localidades - a.localidades)
+        .slice(0,10);
+      if (topLocalities.length){
+        createDashboardChart("stateLocalities", "chartStateLocalities", {
+          type:"bar",
+          data:{
+            labels:topLocalities.map(row => row.nombre),
+            datasets:[{
+              label:"Localidades",
+              data:topLocalities.map(row => row.localidades),
+              backgroundColor:"#ffb300",
+              borderRadius:3
+            }]
+          },
+          options:chartBaseOptions({
+            onClick(event, elements){
+              if (elements.length) focusMunicipio(topLocalities[elements[0].index].nombre);
+            },
+            plugins:{ legend:{ display:false } },
+            scales:{
+              x:{ ticks:{ color:"#666974", maxRotation:55, minRotation:35, font:{ size:9 } }, grid:{ display:false } },
+              y:{ beginAtZero:true, ticks:{ color:"#666974" }, grid:{ color:"rgba(0,0,0,.07)" } }
+            }
+          })
+        });
+      }else showChartEmpty("chartStateLocalities", "La capa municipal no informa localidades beneficiadas para esta selección.");
+
+      const povertyRows = municipalities.filter(row => row.povertyPct != null && row.monto != null);
+      if (povertyRows.length){
+        createDashboardChart("statePoverty", "chartStatePoverty", {
+          type:"scatter",
+          data:{
+            datasets:[{
+              label:"Municipios",
+              data:povertyRows.map(row => ({
+                x:Number(row.povertyPct.toFixed(2)),
+                y:row.monto,
+                nombre:row.nombre,
+                rezago:row.rezago
+              })),
+              backgroundColor:povertyRows.map(row => colorRezago3(row.rezago)),
+              pointRadius:5,
+              pointHoverRadius:7
+            }]
+          },
+          options:chartBaseOptions({
+            onClick(event, elements){
+              if (elements.length) focusMunicipio(povertyRows[elements[0].index].nombre);
+            },
+            plugins:{
+              legend:{ display:false },
+              tooltip:{ callbacks:{
+                title:items => items[0]?.raw?.nombre || "",
+                label:ctx => [`Población en pobreza: ${ctx.raw.x}%`, `Monto: ${formatMXN(ctx.raw.y)}`, `Rezago: ${ctx.raw.rezago}`]
+              } }
+            },
+            scales:{
+              x:{ min:0, max:100, title:{ display:true, text:"Población en pobreza (%)" }, ticks:{ callback:value => `${value}%`, color:"#666974" }, grid:{ color:"rgba(0,0,0,.07)" } },
+              y:{ title:{ display:true, text:"Monto FAIS" }, ticks:{ callback:value => compactMXN(value), color:"#666974" }, grid:{ color:"rgba(0,0,0,.07)" } }
+            }
+          })
+        });
+      }else showChartEmpty("chartStatePoverty", "No hay datos compatibles de población, pobreza y monto para construir esta relación.");
+    }
+
+    function renderDashboard(){
+      destroyDashboardCharts();
+      const stateAvailable = Boolean(currentState && currentMunGeoJSON);
+      $("scaleState").disabled = !stateAvailable;
+      if (dashboardScale === "state" && !stateAvailable) dashboardScale = "national";
+      $("scaleNational").classList.toggle("is-active", dashboardScale === "national");
+      $("scaleState").classList.toggle("is-active", dashboardScale === "state");
+      $("dashboardTitle").textContent = dashboardScale === "state"
+        ? `Dashboard · ${currentState.nombre}`
+        : "Dashboard nacional";
+      if (dashboardScale === "state") renderStateDashboard();
+      else renderNationalDashboard();
+    }
+
+    function openDashboard(){
+      dashboardScale = currentState ? "state" : "national";
+      $("dashboardPanel").hidden = false;
+      $("analysisPanel").style.visibility = "hidden";
+      renderDashboard();
+      $("dashboardClose").focus();
+    }
+
+    function closeDashboard(){
+      destroyDashboardCharts();
+      $("dashboardPanel").hidden = true;
+      $("analysisPanel").style.visibility = "";
+      setTimeout(() => map.invalidateSize(), 80);
+    }
+
+    $("btnDashboard").addEventListener("click", openDashboard);
+    $("dashboardClose").addEventListener("click", closeDashboard);
+    $("scaleNational").addEventListener("click", () => {
+      dashboardScale = "national";
+      renderDashboard();
+    });
+    $("scaleState").addEventListener("click", () => {
+      if (!currentState) return;
+      dashboardScale = "state";
+      renderDashboard();
+    });
+
+    /********************
      * Leyenda rezago
      ********************/
     let legendControl = null;
@@ -1706,6 +2468,7 @@
     });
     document.addEventListener("keydown", (e) => {
       if (e.key === "Escape" && infoModal.classList.contains("is-open")) closePanel();
+      else if (e.key === "Escape" && !$("dashboardPanel").hidden) closeDashboard();
     });
 
     function waitForMapTiles(timeout = 1800){
@@ -2258,6 +3021,8 @@ document.getElementById("btnRezagoInfo").addEventListener("click", openRezagoInf
     function clearMicro(){
       removeLegend();
       hideAnalysisPanel();
+      currentMunGeoJSON = null;
+      currentLocGeoJSON = null;
       if (capaMun){ map.removeLayer(capaMun); capaMun = null; }
       if (capaLoc){ map.removeLayer(capaLoc); capaLoc = null; }
       setLayerControl({});
@@ -2271,6 +3036,7 @@ document.getElementById("btnRezagoInfo").addEventListener("click", openRezagoInf
       document.getElementById("statePill").textContent = "Vista: México";
       document.getElementById("btnBack").disabled = true;
 
+      currentState = null;
       clearMicro();
       showLoading(true);
 
@@ -2278,6 +3044,7 @@ document.getElementById("btnRezagoInfo").addEventListener("click", openRezagoInf
         const res = await fetch("data/mexico_entidades.geojson");
         if (!res.ok) throw new Error("No se pudo cargar data/mexico_entidades.geojson");
         const data = await res.json();
+        currentMexicoGeoJSON = data;
 
         if (capaMexico) map.removeLayer(capaMexico);
 
@@ -2349,12 +3116,14 @@ document.getElementById("btnRezagoInfo").addEventListener("click", openRezagoInf
 
       if (capaMexico) map.removeLayer(capaMexico);
       clearMicro();
+      currentState = st;
       showLoading(true);
 
       try{
         const munRes = await fetch(`${DATA_ESTADOS_DIR}/${slug}_mun.geojson`);
         if (!munRes.ok) throw new Error(`No se pudo cargar ${DATA_ESTADOS_DIR}/${slug}_mun.geojson`);
         const mun = await munRes.json();
+        currentMunGeoJSON = mun;
         buildMunicipioRezagoIndex(mun);
 
         capaMun = L.geoJSON(mun, {
@@ -2386,6 +3155,7 @@ document.getElementById("btnRezagoInfo").addEventListener("click", openRezagoInf
         const locRes = await fetch(`${DATA_ESTADOS_DIR}/${slug}_loc_monto.geojson`);
         if (!locRes.ok) throw new Error(`No se pudo cargar ${DATA_ESTADOS_DIR}/${slug}_loc_monto.geojson`);
         const loc = await locRes.json();
+        currentLocGeoJSON = loc;
         currentMontoBreaks = computeMontoBreaks(loc);
 
         capaLoc = L.geoJSON(loc, {
