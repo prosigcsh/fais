@@ -212,6 +212,46 @@
 
     #map{ flex:1; }
 
+    .filter-bar{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:10px;
+      flex-wrap:wrap;
+      padding:8px 12px;
+      background:rgba(10,10,16,.95);
+      border-bottom:1px solid var(--line);
+    }
+
+    .filter-bar[hidden]{
+      display:none;
+    }
+
+    .filter-control{
+      display:flex;
+      align-items:center;
+      gap:6px;
+      color:var(--txt2);
+      font-size:12px;
+    }
+
+    .filter-control select{
+      min-height:34px;
+      border:1px solid rgba(255,255,255,.14);
+      border-radius:10px;
+      padding:6px 8px;
+      background:var(--panel2);
+      color:var(--txt);
+      font:inherit;
+    }
+
+    .filter-status{
+      max-width:100%;
+      color:var(--txt2);
+      font-size:12px;
+      line-height:1.35;
+    }
+
     .analysis-panel{
       position:fixed;
       right:14px;
@@ -295,6 +335,19 @@
       color:var(--txt2);
       font-size:12px;
       line-height:1.45;
+    }
+
+    .legend{
+      font-size:12px;
+    }
+
+    .legend .hint{
+      margin-top:8px;
+      padding-top:8px;
+      border-top:1px solid rgba(255,255,255,.10);
+      color:var(--txt2);
+      font-size:11px;
+      line-height:1.35;
     }
 
     footer{
@@ -565,6 +618,8 @@
 
       .toolbar-group,
       #search-container,
+      .filter-control,
+      .filter-control select,
       .btn,
       .pill{
         width:100%;
@@ -578,6 +633,17 @@
 
       #map{
         min-height:58vh;
+      }
+
+      .filter-bar{
+        align-items:stretch;
+        gap:8px;
+        padding:8px 10px;
+      }
+
+      .filter-status{
+        width:100%;
+        text-align:center;
       }
 
       .analysis-panel{
@@ -609,7 +675,13 @@
       }
 
       .legend{
-        max-width:210px;
+        max-width:190px;
+        max-height:30vh;
+        overflow:auto;
+      }
+
+      .leaflet-bottom.leaflet-left{
+        bottom:36vh;
       }
 
       .leaflet-control-layers{
@@ -681,6 +753,30 @@
       <button id="btnSources" class="btn">Fuentes y cr&eacute;ditos</button>
       <button id="btnMethod" class="btn">Metodolog&iacute;a</button>
     </div>
+  </div>
+
+  <div id="filterBar" class="filter-bar" hidden>
+    <label class="filter-control">
+      Rezago social
+      <select id="filterRezago">
+        <option value="Todos">Todos</option>
+        <option value="Alto">Alto</option>
+        <option value="Medio">Medio</option>
+        <option value="Bajo">Bajo</option>
+      </select>
+    </label>
+    <label class="filter-control">
+      Monto localidad
+      <select id="filterMonto">
+        <option value="Todos">Todos</option>
+        <option value="Alto">Alto</option>
+        <option value="Medio">Medio</option>
+        <option value="Bajo">Bajo</option>
+      </select>
+    </label>
+    <button id="btnClearFilters" class="btn" type="button">Limpiar filtros</button>
+    <button id="btnRezagoInfo" class="btn" type="button">¿Cómo se clasificó?</button>
+    <span id="filterStatus" class="filter-status">Sin filtros activos.</span>
   </div>
 
   <div id="map"></div>
@@ -815,8 +911,19 @@
   return Number.isFinite(n) ? n : null;
 }
 
+    function repairText(value){
+      const s = (value ?? "").toString();
+      if (!/[ÃÂâð]/.test(s)) return s;
+      try{
+        const bytes = Uint8Array.from(s, ch => ch.charCodeAt(0) & 255);
+        return new TextDecoder("utf-8").decode(bytes);
+      }catch(e){
+        return s;
+      }
+    }
+
     function escapeHtml(value){
-      return (value ?? "").toString().replace(/[&<>"']/g, (ch) => ({
+      return repairText(value).replace(/[&<>"']/g, (ch) => ({
         "&":"&amp;",
         "<":"&lt;",
         ">":"&gt;",
@@ -831,6 +938,12 @@
       if (n == null) return (x ?? "Sin datos").toString();
       const num = new Intl.NumberFormat("es-MX", { maximumFractionDigits: 0 }).format(n);
       return `$${num} MXN`;
+    }
+
+    function formatInt(x){
+      const n = parseNum(x);
+      if (n == null) return "Sin datos";
+      return new Intl.NumberFormat("es-MX", { maximumFractionDigits: 0 }).format(n);
     }
 
     /********************
@@ -867,9 +980,9 @@
     function rezagoNivel(raw){
       const s = norm(raw);
       if (!s) return "Sin dato";
-      if (s.includes("alto") || s.includes("mayor")) return "Alto";
+      if (s.includes("muy alto") || s.includes("alto") || s.includes("mayor")) return "Alto";
       if (s.includes("medio")) return "Medio";
-      if (s.includes("bajo") || s.includes("menor")) return "Bajo";
+      if (s.includes("muy bajo") || s.includes("bajo") || s.includes("menor")) return "Bajo";
       if (s === "a") return "Alto";
       if (s === "m") return "Medio";
       if (s === "b") return "Bajo";
@@ -888,6 +1001,7 @@
      ********************/
     function getMonto(props){
       const candidates = [
+        "MONTO ASIGNADO (PESOS)","MONTO_ASIGNADO_PESOS","MONTO_ASIGNADO",
         "MONTO","monto","MONTO_TOTAL","monto_total","MONTO_FAIS","MONTO FAIS",
         "IMPORTE","importe","ASIGNACION","asignacion","TOTAL","total"
       ];
@@ -961,6 +1075,137 @@
       ]) || "Municipio sin nombre";
     }
 
+    let currentSummary = null;
+    let currentMontoBreaks = null;
+    let currentMunRezagoByName = new Map();
+    const activeFilters = { rezago:"Todos", monto:"Todos" };
+
+    function buildMunicipioRezagoIndex(mun){
+      currentMunRezagoByName = new Map();
+      for (const ft of featuresOf(mun)){
+        const props = ft.properties || {};
+        currentMunRezagoByName.set(norm(repairText(getMunicipioNombre(props))), rezagoNivel(props[REZAGO_FIELD]));
+      }
+    }
+
+    function showFilterBar(on){
+      $("filterBar").hidden = !on;
+    }
+
+    function resetFilters(){
+      activeFilters.rezago = "Todos";
+      activeFilters.monto = "Todos";
+      $("filterRezago").value = "Todos";
+      $("filterMonto").value = "Todos";
+      applyFilters();
+    }
+
+    function computeMontoBreaks(loc){
+      const values = featuresOf(loc)
+        .map(ft => parseNum(getMontoLocalidad(ft.properties || {})))
+        .filter(n => n != null)
+        .sort((a,b) => a - b);
+
+      if (!values.length) return null;
+      const p33 = values[Math.floor((values.length - 1) * 0.33)];
+      const p66 = values[Math.floor((values.length - 1) * 0.66)];
+      return { p33, p66 };
+    }
+
+    function montoNivel(raw, breaks = currentMontoBreaks){
+      const n = parseNum(raw);
+      if (n == null || !breaks) return "Sin dato";
+      if (n <= breaks.p33) return "Bajo";
+      if (n <= breaks.p66) return "Medio";
+      return "Alto";
+    }
+
+    function municipioPasses(layer){
+      if (activeFilters.rezago === "Todos") return true;
+      const props = layer.feature?.properties || {};
+      return rezagoNivel(props[REZAGO_FIELD]) === activeFilters.rezago;
+    }
+
+    function localidadPasses(layer){
+      const props = layer.feature?.properties || {};
+      if (activeFilters.rezago !== "Todos"){
+        const munName = norm(repairText(props.MUNICIPIO || props.NOMGEO || props.NOM_MUN || ""));
+        if (currentMunRezagoByName.get(munName) !== activeFilters.rezago) return false;
+      }
+      if (activeFilters.monto === "Todos") return true;
+      return montoNivel(getMontoLocalidad(props)) === activeFilters.monto;
+    }
+
+    function applyFilters(){
+      let munVisible = 0;
+      let locVisible = 0;
+
+      if (capaMun){
+        capaMun.eachLayer(layer => {
+          const visible = municipioPasses(layer);
+          if (visible) munVisible++;
+          const props = layer.feature?.properties || {};
+          const nivel = rezagoNivel(props[REZAGO_FIELD]);
+          layer.setStyle({
+            color: visible ? "rgba(74,20,140,.78)" : "rgba(120,120,120,.35)",
+            weight: visible ? 1.1 : 0.5,
+            fillColor: colorRezago3(nivel),
+            fillOpacity: visible ? 0.58 : 0.06,
+            opacity: visible ? 1 : 0.35
+          });
+        });
+      }
+
+      if (capaLoc){
+        capaLoc.eachLayer(layer => {
+          const visible = localidadPasses(layer);
+          if (visible) locVisible++;
+          layer.setStyle({
+            ...puntoStyle(layer.feature?.properties || {}),
+            fillOpacity: visible ? 0.95 : 0.10,
+            opacity: visible ? 1 : 0.28,
+            radius: visible ? puntoStyle(layer.feature?.properties || {}).radius : 4
+          });
+        });
+      }
+
+      updateFilterStatus(munVisible, locVisible);
+    }
+
+    function updateFilterStatus(munVisible, locVisible){
+      const parts = [];
+      if (activeFilters.rezago !== "Todos") parts.push(`rezago ${activeFilters.rezago.toLowerCase()}`);
+      if (activeFilters.monto !== "Todos") parts.push(`monto ${activeFilters.monto.toLowerCase()}`);
+      const label = parts.length ? `Filtro activo: ${parts.join(" + ")}.` : "Sin filtros activos.";
+      $("filterStatus").textContent = `${label} Mostrando ${formatInt(munVisible)} municipio(s) y ${formatInt(locVisible)} localidad(es).`;
+    }
+
+    function openRezagoInfo(){
+      openPanel("Clasificación de rezago social", `
+        <h2 style="margin-top:0;color:#4a148c">¿Cómo se clasificó el rezago?</h2>
+        <p>
+          La capa municipal contiene el campo <b>${REZAGO_FIELD}</b>, tomado del
+          <b>Índice de Rezago Social 2020 de CONEVAL</b>.
+        </p>
+        <p>
+          Para facilitar la lectura pública del mapa, los valores originales se agrupan en tres niveles:
+        </p>
+        <ul>
+          <li><b>Alto:</b> incluye “Alto” y “Muy alto”.</li>
+          <li><b>Medio:</b> conserva la categoría “Medio”.</li>
+          <li><b>Bajo:</b> incluye “Bajo” y “Muy bajo”.</li>
+        </ul>
+        <p>
+          Esta agrupación simplifica la visualización, pero no reemplaza el dato original:
+          en las fichas y atributos puede revisarse la categoría específica de cada municipio.
+        </p>
+        <p>
+          El filtro de <b>monto localidad</b> se calcula por cada entidad cargada, dividiendo los montos FAIS
+          de sus localidades en tres grupos: bajo, medio y alto.
+        </p>
+      `);
+    }
+
     function buildStateSummary(st, mun, loc){
       const munFeatures = featuresOf(mun);
       const locFeatures = featuresOf(loc);
@@ -1000,7 +1245,8 @@
         montoTotal: montoBase,
         rezago,
         maxMun,
-        lectura
+        lectura,
+        montoBreaks: currentMontoBreaks
       };
     }
 
@@ -1035,6 +1281,7 @@
           <li>Rezago medio: ${summary.rezago.Medio || 0} municipio(s).</li>
           <li>Rezago bajo: ${summary.rezago.Bajo || 0} municipio(s).</li>
           <li>Mayor monto municipal: ${escapeHtml(summary.maxMun.nombre)} (${formatMXN(summary.maxMun.monto)}).</li>
+          <li>Montos de localidad: bajo hasta ${formatMXN(summary.montoBreaks?.p33)}, medio hasta ${formatMXN(summary.montoBreaks?.p66)}, alto por encima de ese rango.</li>
         </ul>
       `;
     }
@@ -1043,6 +1290,10 @@
       const panel = $("analysisPanel");
       panel.hidden = true;
       panel.innerHTML = "";
+      currentSummary = null;
+      currentMontoBreaks = null;
+      currentMunRezagoByName = new Map();
+      showFilterBar(false);
     }
 
     /********************
@@ -1052,15 +1303,16 @@
 
     function addLegend() {
   removeLegend();
-  legendControl = L.control({ position: "bottomright" });
+  legendControl = L.control({ position: "bottomleft" });
   legendControl.onAdd = function(){
     const div = L.DomUtil.create("div", "legend");
     div.innerHTML = `
-      <div class="ttl"><b>${REZAGO_FIELD}</b> (3 niveles)</div>
-      <div class="row"><span class="swatch" style="background:var(--rez-alto)"></span> Alto</div>
+      <div class="ttl"><b>Rezago social</b></div>
+      <div class="row"><span class="swatch" style="background:var(--rez-alto)"></span> Alto / muy alto</div>
       <div class="row"><span class="swatch" style="background:var(--rez-medio)"></span> Medio</div>
-      <div class="row"><span class="swatch" style="background:var(--rez-bajo)"></span> Bajo</div>
+      <div class="row"><span class="swatch" style="background:var(--rez-bajo)"></span> Bajo / muy bajo</div>
       <div class="row"><span class="swatch" style="background:var(--acento); border-radius:50%; width:14px; height:14px; display:block;"></span> Localidades beneficiadas</div>
+      <div class="hint">Clasificación agrupada a partir del campo "${REZAGO_FIELD}" de CONEVAL 2020. El tamaño de los puntos representa el monto FAIS asignado.</div>
     `;
     return div;
   };
@@ -1436,6 +1688,16 @@ function openMethodology(){
 }
 
 document.getElementById("btnMethod").addEventListener("click", openMethodology);
+document.getElementById("filterRezago").addEventListener("change", (e) => {
+  activeFilters.rezago = e.target.value;
+  applyFilters();
+});
+document.getElementById("filterMonto").addEventListener("change", (e) => {
+  activeFilters.monto = e.target.value;
+  applyFilters();
+});
+document.getElementById("btnClearFilters").addEventListener("click", resetFilters);
+document.getElementById("btnRezagoInfo").addEventListener("click", openRezagoInfo);
 
     /********************
      * Capas
@@ -1479,10 +1741,10 @@ document.getElementById("btnMethod").addEventListener("click", openMethodology);
           },
           onEachFeature: (f, layer) => {
             const props = f.properties || {};
-            const nom = getEntidadNombre(props) || props["NOMBRE_EDO"] || "Entidad";
+            const nom = repairText(getEntidadNombre(props) || props["NOMBRE_EDO"] || "Entidad");
             const cve = String(props.CVE_ENT ?? "").padStart(2,"0");
 
-            const nomgeo = props["NOMBRE_EDO"] || nom;
+            const nomgeo = repairText(props["NOMBRE_EDO"] || nom);
 
             const totalRaw = props["MONTOASIGNADO_TOTAL"];
             const totalFmt = formatMXN(totalRaw);
@@ -1493,8 +1755,8 @@ document.getElementById("btnMethod").addEventListener("click", openMethodology);
               : (pdfStr || "Sin datos");
 
             layer.bindTooltip(
-              `<b>${nom}</b><br>
-               <span style="color:#cfd3da"><b>NOMGEO:</b></span> ${nomgeo}<br>
+              `<b>${escapeHtml(nom)}</b><br>
+               <span style="color:#cfd3da"><b>NOMGEO:</b></span> ${escapeHtml(nomgeo)}<br>
                <span style="color:#cfd3da"><b>Total FAIS 2025:</b></span> ${totalFmt}<br>
                
                <span style="color:#cfd3da;opacity:.85">Clic para abrir</span>`,
@@ -1544,6 +1806,7 @@ document.getElementById("btnMethod").addEventListener("click", openMethodology);
         const munRes = await fetch(`${DATA_ESTADOS_DIR}/${slug}_mun.geojson`);
         if (!munRes.ok) throw new Error(`No se pudo cargar ${DATA_ESTADOS_DIR}/${slug}_mun.geojson`);
         const mun = await munRes.json();
+        buildMunicipioRezagoIndex(mun);
 
         capaMun = L.geoJSON(mun, {
           style: f => {
@@ -1557,11 +1820,11 @@ document.getElementById("btnMethod").addEventListener("click", openMethodology);
           },
           onEachFeature: (f, layer) => {
             const props = f.properties || {};
-            const nom = props.NOMGEO || props.NOM_MUN || props.NOMBRE || props.MUNICIPIO || props.municipio || "Municipio";
+            const nom = repairText(props.NOMGEO || props.NOM_MUN || props.NOMBRE || props.MUNICIPIO || props.municipio || "Municipio");
             const nivel = rezagoNivel(props[REZAGO_FIELD]);
             const montoMun = formatMXN(props.MONTOASIGNADO_TOTAL);
             layer.bindTooltip(
-              `<b>${nom}</b><br>
+              `<b>${escapeHtml(nom)}</b><br>
               <span style="color:#cfd3da">${REZAGO_FIELD}: </span>${nivel}<br>
              <span style="color:#cfd3da">FAIS municipal:</span> ${montoMun}`, 
               { sticky:true }
@@ -1572,16 +1835,17 @@ document.getElementById("btnMethod").addEventListener("click", openMethodology);
         const locRes = await fetch(`${DATA_ESTADOS_DIR}/${slug}_loc_monto.geojson`);
         if (!locRes.ok) throw new Error(`No se pudo cargar ${DATA_ESTADOS_DIR}/${slug}_loc_monto.geojson`);
         const loc = await locRes.json();
+        currentMontoBreaks = computeMontoBreaks(loc);
 
         capaLoc = L.geoJSON(loc, {
           pointToLayer,
           onEachFeature: (f, layer) => {
             const props = f.properties || {};
-            const locNom = props.LOCALIDAD || props.NOMBRE || "Localidad";
+            const locNom = repairText(props.LOCALIDAD || props.NOMBRE || "Localidad");
             const montoLoc = formatMXN(props["MONTO ASIGNADO (PESOS)"]);
 
     layer.bindTooltip(
-      `<b>${locNom}</b><br>
+      `<b>${escapeHtml(locNom)}</b><br>
        <span style="color:#6DA193">Monto asignado:</span> ${montoLoc}`,
       { sticky:true }
     );
@@ -1603,7 +1867,14 @@ document.getElementById("btnMethod").addEventListener("click", openMethodology);
           "Localidades (Monto)": capaLoc
         });
 
-        renderAnalysisPanel(buildStateSummary(st, mun, loc));
+        currentSummary = buildStateSummary(st, mun, loc);
+        renderAnalysisPanel(currentSummary);
+        showFilterBar(true);
+        activeFilters.rezago = "Todos";
+        activeFilters.monto = "Todos";
+        $("filterRezago").value = "Todos";
+        $("filterMonto").value = "Todos";
+        applyFilters();
         addLegend();
 
         if (st.center && st.zoom){
