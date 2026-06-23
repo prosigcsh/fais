@@ -255,10 +255,10 @@
     .analysis-panel{
       position:fixed;
       right:14px;
-      top:188px;
+      bottom:50px;
       z-index:850;
       width:min(340px,calc(100vw - 28px));
-      max-height:calc(100vh - 270px);
+      max-height:min(48vh,520px);
       overflow:auto;
       border:1px solid rgba(255,255,255,.14);
       border-radius:14px;
@@ -349,6 +349,36 @@
       font-size:11px;
       line-height:1.35;
     }
+
+    .legend .section{
+      margin-top:10px;
+      padding-top:8px;
+      border-top:1px solid rgba(255,255,255,.10);
+    }
+
+    .amount-row{
+      display:grid;
+      grid-template-columns:28px 1fr;
+      align-items:center;
+      gap:8px;
+      margin:7px 0;
+      color:var(--txt2);
+      font-size:11px;
+      line-height:1.25;
+    }
+
+    .amount-dot{
+      display:inline-block;
+      justify-self:center;
+      border-radius:50%;
+      background:var(--acento);
+      border:1px solid rgba(0,0,0,.55);
+      box-shadow:0 0 0 1px rgba(255,255,255,.12);
+    }
+
+    .amount-dot.low{ width:10px; height:10px; }
+    .amount-dot.mid{ width:17px; height:17px; }
+    .amount-dot.high{ width:24px; height:24px; }
 
     footer{
       padding:10px 14px;
@@ -968,7 +998,7 @@
       layersControl = L.control.layers(
         { "OpenStreetMap": osm, "Satélite": sat },
         overlays || {},
-        { collapsed:false }
+        { collapsed:true }
       ).addTo(map);
     }
 
@@ -1301,6 +1331,30 @@
      ********************/
     let legendControl = null;
 
+    function amountLegendRows(){
+      if (!currentMontoBreaks){
+        return `
+          <div class="amount-row"><span class="amount-dot low"></span><span>Monto bajo</span></div>
+          <div class="amount-row"><span class="amount-dot mid"></span><span>Monto medio</span></div>
+          <div class="amount-row"><span class="amount-dot high"></span><span>Monto alto</span></div>
+        `;
+      }
+      return `
+        <div class="amount-row">
+          <span class="amount-dot low"></span>
+          <span>Bajo: hasta ${formatMXN(currentMontoBreaks.p33)}</span>
+        </div>
+        <div class="amount-row">
+          <span class="amount-dot mid"></span>
+          <span>Medio: ${formatMXN(currentMontoBreaks.p33)} a ${formatMXN(currentMontoBreaks.p66)}</span>
+        </div>
+        <div class="amount-row">
+          <span class="amount-dot high"></span>
+          <span>Alto: mayor a ${formatMXN(currentMontoBreaks.p66)}</span>
+        </div>
+      `;
+    }
+
     function addLegend() {
   removeLegend();
   legendControl = L.control({ position: "bottomleft" });
@@ -1312,7 +1366,11 @@
       <div class="row"><span class="swatch" style="background:var(--rez-medio)"></span> Medio</div>
       <div class="row"><span class="swatch" style="background:var(--rez-bajo)"></span> Bajo / muy bajo</div>
       <div class="row"><span class="swatch" style="background:var(--acento); border-radius:50%; width:14px; height:14px; display:block;"></span> Localidades beneficiadas</div>
-      <div class="hint">Clasificación agrupada a partir del campo "${REZAGO_FIELD}" de CONEVAL 2020. El tamaño de los puntos representa el monto FAIS asignado.</div>
+      <div class="section">
+        <div class="ttl"><b>Monto FAIS por localidad</b></div>
+        ${amountLegendRows()}
+      </div>
+      <div class="hint">Rezago agrupado a partir del campo "${REZAGO_FIELD}" de CONEVAL 2020. Los rangos de monto se calculan por terciles dentro de la entidad seleccionada.</div>
     `;
     return div;
   };
