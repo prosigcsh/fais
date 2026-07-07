@@ -780,6 +780,131 @@
       height:auto;
     }
 
+    .analysis-document{
+      color:#23202a;
+      background:#fbfafc;
+      border-radius:14px;
+      overflow:hidden;
+    }
+
+    .analysis-hero{
+      min-height:clamp(280px,42vh,480px);
+      display:flex;
+      align-items:flex-end;
+      padding:clamp(22px,5vw,52px);
+      color:#fff;
+      background:
+        linear-gradient(180deg, rgba(35,12,55,.18), rgba(35,12,55,.88)),
+        url("assets/graficas_fais/grafica_3.jpg") center/cover fixed;
+    }
+
+    .analysis-hero h2{
+      max-width:820px;
+      margin:0 0 8px;
+      color:#fff!important;
+      font-size:clamp(28px,5vw,54px);
+      line-height:1.02;
+    }
+
+    .analysis-hero p{
+      max-width:760px;
+      margin:0;
+      color:rgba(255,255,255,.88);
+      font-size:clamp(15px,2vw,19px);
+    }
+
+    .analysis-author{
+      margin:0 0 14px;
+      color:#6c6173;
+      font-size:14px;
+      font-weight:700;
+      text-transform:uppercase;
+      letter-spacing:.04em;
+    }
+
+    .analysis-content{
+      max-width:880px;
+      margin:0 auto;
+      padding:clamp(20px,4vw,46px);
+      background:#fff;
+    }
+
+    .analysis-content p{
+      margin:0 0 15px;
+      font-size:16px;
+      line-height:1.72;
+    }
+
+    .analysis-content h3{
+      margin:34px 0 12px;
+      color:var(--morado-osc)!important;
+      font-size:clamp(20px,3vw,28px);
+      line-height:1.15;
+    }
+
+    .analysis-callout{
+      margin:22px 0;
+      padding:16px 18px;
+      border-left:5px solid var(--accent);
+      border-radius:12px;
+      background:#fff7e3;
+      color:#32291b;
+    }
+
+    .analysis-list{
+      margin:0 0 18px 22px;
+      padding:0;
+      line-height:1.65;
+    }
+
+    .analysis-figure{
+      margin:28px calc(50% - min(48vw,520px));
+      padding:0 clamp(14px,3vw,28px);
+    }
+
+    .analysis-visual{
+      min-height:260px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      overflow:hidden;
+      border-radius:16px;
+      border:1px solid rgba(76,39,105,.14);
+      background:#f4f0f7;
+      box-shadow:0 16px 42px rgba(50,28,69,.14);
+    }
+
+    .analysis-visual img{
+      display:block;
+      width:100%;
+      max-height:min(72vh,720px);
+      object-fit:contain;
+      transform:translateY(var(--parallax-y,0px)) scale(1.03);
+      transition:transform .08s linear;
+      will-change:transform;
+    }
+
+    .analysis-caption{
+      max-width:880px;
+      margin:10px auto 0;
+      color:#6a6370;
+      font-size:13px;
+      line-height:1.45;
+    }
+
+    .analysis-sources{
+      margin-top:28px;
+      padding-top:18px;
+      border-top:1px solid #e6e1eb;
+      color:#403846;
+    }
+
+    .analysis-sources p{
+      font-size:14px;
+      line-height:1.55;
+      overflow-wrap:anywhere;
+    }
+
     .info-sheet{
       color:#222;
     }
@@ -1114,6 +1239,29 @@
         padding:14px;
       }
 
+      .analysis-hero{
+        min-height:260px;
+        background-attachment:scroll;
+      }
+
+      .analysis-content{
+        padding:20px 16px;
+      }
+
+      .analysis-figure{
+        margin:22px -10px;
+        padding:0;
+      }
+
+      .analysis-visual{
+        min-height:180px;
+        border-radius:12px;
+      }
+
+      .analysis-visual img{
+        transform:none!important;
+      }
+
       .sheet-title{
         font-size:20px;
       }
@@ -1259,6 +1407,42 @@
       body.print-modal .sheet-note{
         break-inside:avoid;
       }
+
+      body.print-modal .analysis-document,
+      body.print-modal .analysis-content,
+      body.print-modal .analysis-hero{
+        background:#fff!important;
+        color:#111!important;
+      }
+
+      body.print-modal .analysis-hero{
+        min-height:auto!important;
+        padding:0 0 14px!important;
+      }
+
+      body.print-modal .analysis-hero h2{
+        color:#111!important;
+      }
+
+      body.print-modal .analysis-hero p{
+        color:#333!important;
+      }
+
+      body.print-modal .analysis-figure{
+        margin:18px 0!important;
+        padding:0!important;
+        break-inside:avoid;
+      }
+
+      body.print-modal .analysis-visual{
+        min-height:auto!important;
+        box-shadow:none!important;
+      }
+
+      body.print-modal .analysis-visual img{
+        transform:none!important;
+        max-height:180mm!important;
+      }
     }
   </style>
 </head>
@@ -1302,6 +1486,7 @@
       <button id="btnMethod" class="btn">Metodolog&iacute;a</button>
       <button id="btnDataNotes" class="btn" type="button">Datos y limitaciones</button>
       <button id="btnDashboard" class="btn" type="button">Dashboard</button>
+      <button id="btnAnalysis" class="btn" type="button">An&aacute;lisis</button>
       <button id="btnPrintMap" class="btn" type="button">Imprimir mapa</button>
     </div>
   </div>
@@ -2435,6 +2620,7 @@
     const modalBody = $("modalBody");
     const modalClose = $("modalClose");
     const modalPrint = $("modalPrint");
+    let analysisParallaxHandler = null;
 
     function extractBodyContent(html){
       const match = html.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
@@ -2459,6 +2645,10 @@
       infoModal.classList.remove("is-open");
       infoModal.setAttribute("aria-hidden", "true");
       document.body.classList.remove("modal-open");
+      if (analysisParallaxHandler){
+        modalBody.removeEventListener("scroll", analysisParallaxHandler);
+        analysisParallaxHandler = null;
+      }
       modalBody.innerHTML = "";
     }
 
@@ -2786,6 +2976,172 @@ Programa Especial de Sistemas de Información Geográfica para Ciencias Sociales
     }
 
     document.getElementById("btnDataNotes").addEventListener("click", openDataNotes);
+
+    function setupAnalysisParallax(){
+      if (analysisParallaxHandler){
+        modalBody.removeEventListener("scroll", analysisParallaxHandler);
+      }
+
+      const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const isNarrow = window.matchMedia("(max-width: 720px)").matches;
+      const figures = [...modalBody.querySelectorAll(".analysis-visual img")];
+
+      if (reduceMotion || isNarrow || !figures.length){
+        figures.forEach(img => img.style.setProperty("--parallax-y", "0px"));
+        analysisParallaxHandler = null;
+        return;
+      }
+
+      analysisParallaxHandler = () => {
+        const viewport = modalBody.getBoundingClientRect();
+        figures.forEach(img => {
+          const box = img.closest(".analysis-visual").getBoundingClientRect();
+          const progress = (box.top + box.height / 2 - viewport.top) / Math.max(viewport.height, 1);
+          const offset = (0.5 - progress) * 36;
+          img.style.setProperty("--parallax-y", `${Math.max(-18, Math.min(18, offset)).toFixed(1)}px`);
+        });
+      };
+
+      modalBody.addEventListener("scroll", analysisParallaxHandler, { passive:true });
+      analysisParallaxHandler();
+    }
+
+    function openAnalysis(){
+      const html = `
+        <article class="analysis-document">
+          <section class="analysis-hero">
+            <div>
+              <h2>Lectura y análisis de datos</h2>
+              <p>Distribución territorial de los recursos FAIS 2025, localidades beneficiadas, rezago social y pobreza extrema.</p>
+            </div>
+          </section>
+
+          <div class="analysis-content">
+            <p class="analysis-author">Vanesa Jaimes López</p>
+
+            <p>Las siguientes gráficas muestran cómo se distribuyeron los recursos del FAIS 2025 en el país. A través de ellas se puede observar cuántas localidades fueron beneficiadas, qué estados recibieron más apoyos y cómo estos recursos se relacionan con la pobreza extrema y el rezago social. En conjunto, la información permite identificar hacia dónde se dirigieron los apoyos y cuáles fueron las entidades con mayor atención por parte del programa.</p>
+
+            <p>Del total de 299,789 localidades registradas en el país, de acuerdo con el INEGI (2020), lo cual representa el 100% (gráfica No.1), el programa FAIS 2025 benefició únicamente al 5.6%, equivalente a 17,758 localidades. Y el 94.4% de las localidades del país no fueron beneficiadas por este programa, lo que corresponde a 282,031 localidades.</p>
+
+            <figure class="analysis-figure">
+              <div class="analysis-visual">
+                <img src="assets/graficas_fais/grafica_1.jpg" alt="Gráfica 1 sobre localidades beneficiadas y no beneficiadas por el FAIS 2025">
+              </div>
+              <figcaption class="analysis-caption">Gráfica 1. Localidades beneficiadas y no beneficiadas por el FAIS 2025.</figcaption>
+            </figure>
+
+            <p>Para la elaboración de la gráfica no.2 se utilizó el método de progresión geométrica (Gómez María del Consuelo, 2004) con el fin de definir los intervalos de clasificación. A partir de este método, los estados de la República se agruparon en tres categorías, nivel bajo, medio y alto, de acuerdo con el número total de localidades beneficiadas por entidad. Como resultado, se establecieron los siguientes intervalos:</p>
+
+            <ul class="analysis-list">
+              <li><b>Bajo:</b> a las entidades a las cuales se les benefició entre 2 a 29 localidades.</li>
+              <li><b>Medio:</b> a las entidades a las cuales se les benefició entre 30 a 437 localidades.</li>
+              <li><b>Alto:</b> a las entidades a las cuales se les benefició entre 438 a 6,477 localidades.</li>
+            </ul>
+
+            <p>Por lo tanto, en este gráfico se puede observar que con el mayor porcentaje correspondiente al 42.3% de las entidades del país (11), se encuentran dentro de la clasificación de medio, lo que significa que a las entidades se les benefició entre 30 y 437 localidades a cada una de ellas.</p>
+            <p>Después con un 34.6% de las entidades del país (9), se encuentran dentro de la clasificación de alto, lo que corresponde a que a las entidades se les benefició entre 438 a 6,477 localidades a cada una de ellas.</p>
+            <p>Y finalmente con un 23.1% de las entidades del país (6), se encuentran dentro de la clasificación de bajo, lo que corresponde a que a las entidades se les benefició entre 2 a 29 localidades a cada una de ellas.</p>
+
+            <figure class="analysis-figure">
+              <div class="analysis-visual">
+                <img src="assets/graficas_fais/grafica_2.jpg" alt="Gráfica 2 con clasificación de entidades por número de localidades beneficiadas">
+              </div>
+              <figcaption class="analysis-caption">Gráfica 2. Clasificación de entidades por número de localidades beneficiadas.</figcaption>
+            </figure>
+
+            <p>Con base en lo anterior, se observa que los recursos del FAIS (2025) se concentran principalmente en el nivel intermedio, lo que indica una mayor asignación hacia entidades con un número medio (30 a 437) de localidades beneficiadas.</p>
+
+            <p>De las 17,758 localidades beneficiadas, la gráfica No.3 muestra que Oaxaca, Chiapas, Guerrero e Hidalgo concentran la mayor proporción de apoyos, lo que los posiciona también como los principales receptores de recursos. En contraste, estados como Colima y Coahuila presentan una cobertura mínima, con apenas dos localidades beneficiadas en cada caso. Esta marcada diferencia refleja una distribución desigual entre localidades, donde los apoyos tienden a concentrarse en aquellas con mayor rezago socioeconómico más profundos. Esta tendencia resulta congruente con el objetivo del programa FAIS, orientado a priorizar a las poblaciones en condiciones de mayor exclusión social.</p>
+
+            <figure class="analysis-figure">
+              <div class="analysis-visual">
+                <img src="assets/graficas_fais/grafica_3.jpg" alt="Gráfica 3 con distribución de localidades beneficiadas por entidad">
+              </div>
+              <figcaption class="analysis-caption">Gráfica 3. Localidades beneficiadas por entidad federativa.</figcaption>
+            </figure>
+
+            <p>En la gráfica no.4 se puede observar la relación entre el monto de recursos asignado a cada estado y el número de localidades beneficiadas. Se aprecia que estados como Oaxaca, Chiapas y Guerrero, que tienen más localidades atendidas, también son los que reciben mayores cantidades de recursos del FAIS 2025.</p>
+
+            <figure class="analysis-figure">
+              <div class="analysis-visual">
+                <img src="assets/graficas_fais/grafica_4.jpg" alt="Gráfica 4 sobre monto FAIS asignado y localidades beneficiadas por estado">
+              </div>
+              <figcaption class="analysis-caption">Gráfica 4. Relación entre monto asignado y número de localidades beneficiadas.</figcaption>
+            </figure>
+
+            <p>Esto sugiere que, en general, cuando a un estado se le asigna más dinero, este se distribuye entre un mayor número de localidades dentro de su territorio. Es decir, existe una relación directa entre el monto asignado y el alcance del programa, ya que más recursos permiten beneficiar a más localidades.</p>
+
+            <p>En la gráfica no.5 se observa que los estados con mayor población en situación de pobreza extrema, como Chiapas y Oaxaca, presentan también un mayor número de localidades beneficiadas, lo que sugiere que los apoyos tienden a concentrarse en aquellas con mayores rezagos socioeconómicos. No obstante, la relación entre ambas variables no es completamente proporcional, ya que existen entidades con niveles elevados de pobreza extrema, pero con una cobertura relativamente menor en términos de localidades beneficiadas. Esto puede explicarse porque el FAIS no solo considera la magnitud de la población en pobreza, sino también otros criterios de priorización, como el grado de rezago social y la atención a poblaciones indígenas.</p>
+
+            <figure class="analysis-figure">
+              <div class="analysis-visual">
+                <img src="assets/graficas_fais/grafica_5.jpg" alt="Gráfica 5 sobre pobreza extrema y localidades beneficiadas">
+              </div>
+              <figcaption class="analysis-caption">Gráfica 5. Relación entre pobreza extrema, criterios de priorización y localidades beneficiadas.</figcaption>
+            </figure>
+
+            <p>Asimismo, no todas las entidades siguen esta misma tendencia. Por ejemplo, el Estado de México concentra una alta población en situación de pobreza extrema; sin embargo, el número de localidades beneficiadas es menor en comparación con entidades como Oaxaca o Chiapas.</p>
+
+            <p>En la gráfica no.6 se observa la distribución porcentual del grado de rezago social en los municipios de México, lo que permite identificar la proporción en la que se ubica cada nivel. Destaca que la mayor parte de los municipios se concentra en niveles de rezago bajo (36.1%) y muy bajo (26.4%), los cuales, en conjunto, representan más de la mitad del total nacional.</p>
+
+            <p>En contraste, los municipios con rezago medio (20.4%) y alto (10.5%) presentan una menor cobertura, mientras que aquellos con muy alto rezago constituyen apenas el 6.4% del total, equivalente a 135 municipios. Este bajo porcentaje no implica una menor relevancia, ya que estas localidades suelen concentrar problemáticas más profundas y, por tanto, requieren una atención prioritaria dentro de las políticas públicas.</p>
+
+            <figure class="analysis-figure">
+              <div class="analysis-visual">
+                <img src="assets/graficas_fais/grafica_6.jpg" alt="Gráfica 6 con distribución porcentual del grado de rezago social municipal">
+              </div>
+              <figcaption class="analysis-caption">Gráfica 6. Distribución porcentual del grado de rezago social en municipios de México.</figcaption>
+            </figure>
+
+            <p>La gráfica no.7 permite profundizar en la forma en que estas localidades están siendo atendidas a través del programa FAIS 2025. Se observa que la distribución de los municipios con muy alto rezago no es homogénea a nivel nacional, sino que tiende a concentrarse en ciertos estados, particularmente en Oaxaca, Chiapas y Guerrero, los cuales presentan el mayor número de municipios dentro de esta categoría. De igual forma, estas entidades destacan por recibir mayores montos de recursos, lo que confirma que el programa prioriza a las localidades con mayores niveles de rezago social.</p>
+
+            <figure class="analysis-figure">
+              <div class="analysis-visual">
+                <img src="assets/graficas_fais/grafica_7.jpg" alt="Gráfica 7 sobre municipios con muy alto rezago social y recursos FAIS">
+              </div>
+              <figcaption class="analysis-caption">Gráfica 7. Distribución territorial de municipios con muy alto rezago social y recursos FAIS.</figcaption>
+            </figure>
+
+            <h3>¿Cómo se mide el rezago social?</h3>
+            <p>El rezago social se mide mediante el Índice de Rezago Social del CONEVAL (Consejo Nacional de Evaluación de la Política de Desarrollo Social), el cual integra variables como educación, salud, seguridad social y condiciones de la vivienda en un solo indicador. Este índice permite comparar y clasificar a los territorios según su nivel de rezago, desde muy alto hasta muy bajo.</p>
+
+            <h3>¿Cómo se mide la pobreza y pobreza extrema?</h3>
+            <p>La medición de la pobreza evalúa las condiciones de vida de la población. Actualmente se considera un fenómeno multidimensional, ya que no solo toma en cuenta el ingreso, sino también otros factores (educación, salud, acceso a servicios básicos, calidad de la vivienda, alimentación, seguridad social, cohesión social y accesibilidad).</p>
+            <p>La metodología del CONEVAL para medir la pobreza es de tipo multidimensional, ya que combina dos aspectos principales: el ingreso y el acceso a derechos sociales. Por un lado, se evalúa si el ingreso de las personas es suficiente para cubrir sus necesidades básicas mediante líneas de pobreza; por otro, se analiza si presentan carencias en aspectos fundamentales como la educación, la salud, la seguridad social, la calidad de la vivienda, los servicios básicos y la alimentación.</p>
+
+            <div class="analysis-callout">
+              <p>En este sentido, una persona se considera en situación de pobreza cuando tiene ingresos insuficientes y presenta al menos una carencia social.</p>
+              <p>Pobreza extrema cuando el ingreso no alcanza ni siquiera para cubrir la canasta básica alimentaria y, además, se registran tres o más carencias sociales.</p>
+            </div>
+
+            <p>A continuación, se presenta un diagrama en torno a las carencias sociales (ver figura 1)</p>
+
+            <figure class="analysis-figure">
+              <div class="analysis-visual">
+                <img src="assets/graficas_fais/figura_1.jpg" alt="Figura 1 con diagrama de carencias sociales para la medición multidimensional de la pobreza">
+              </div>
+              <figcaption class="analysis-caption">Fuente: Elaboración propia con base en CONEVAL. Metodología para la medición multidimensional de la pobreza en México (2019).</figcaption>
+            </figure>
+
+            <p>El rezago social y la pobreza están estrechamente relacionados, ya que ambos consideran carencias en las condiciones de vida; sin embargo, el rezago social se enfoca en las características de los territorios, mientras que la pobreza incorpora además el nivel de ingreso de las personas para determinar su situación.</p>
+            <p>Aunque ambos indicadores comparten el análisis de carencias sociales, la pobreza incorpora además el ingreso, lo que permite una evaluación más integral de las condiciones de vida.</p>
+
+            <section class="analysis-sources">
+              <h3>Fuentes consultadas</h3>
+              <p>Consejo Nacional de Evaluación de la Política de Desarrollo Social (CONEVAL). (2020). <i>Índice de Rezago Social 2020</i>.<br><a href="https://www.coneval.org.mx/Medicion/IRS/Paginas/Indice_Rezago_Social_2020.aspx" target="_blank" rel="noopener">https://www.coneval.org.mx/Medicion/IRS/Paginas/Indice_Rezago_Social_2020.aspx</a></p>
+              <p>Gómez Escobar, M. del C. (2004). <i>Métodos y técnicas de la cartografía temática</i> (pp. 97-98). Instituto de Geografía, UNAM.</p>
+              <p>Instituto Nacional de Estadística y Geografía (INEGI). (2021). <i>Tabulados predefinidos del Censo de Población y Vivienda 2020</i>.<br><a href="https://www.inegi.org.mx/programas/ccpv/2020/#tabulados" target="_blank" rel="noopener">https://www.inegi.org.mx/programas/ccpv/2020/#tabulados</a></p>
+              <p>Secretaría de Bienestar e Igualdad Social de la Ciudad de México. (2025). <i>Fondo de Aportaciones para la Infraestructura Social (FAIS)</i>.<br><a href="http://200.188.126.15:8082/FAISPIAM2025.bienestar/" target="_blank" rel="noopener">http://200.188.126.15:8082/FAISPIAM2025.bienestar/</a></p>
+            </section>
+          </div>
+        </article>
+      `;
+
+      openPanel("Análisis de datos", html);
+      requestAnimationFrame(setupAnalysisParallax);
+    }
+
+    document.getElementById("btnAnalysis").addEventListener("click", openAnalysis);
 
 /********************
  * ✅ METODOLOGÍA
